@@ -1,0 +1,2 @@
+com.nexfly.wehcat.autoconfigure.WechatMiniAppAutoConfiguration
+com.nexfly.wehcat.autoconfigure.WechatMpAutoConfiguration

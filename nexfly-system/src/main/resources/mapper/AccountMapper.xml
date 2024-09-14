@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.nexfly.system.mapper.AccountMapper">
+  <resultMap id="BaseResultMap" type="com.nexfly.system.model.Account">
+    <id column="account_id" property="accountId" />
+    <result column="name" property="name" />
+    <result column="email" property="email" />
+    <result column="password" property="password" />
+    <result column="password_salt" property="passwordSalt" />
+    <result column="avatar" property="avatar" />
+    <result column="language" property="language" />
+    <result column="theme" property="theme" />
+    <result column="timezone" property="timezone" />
+    <result column="last_login_time" property="lastLoginTime" />
+    <result column="last_login_ip" property="lastLoginIp" />
+    <result column="status" property="status" />
+    <result column="create_at" property="createAt" />
+    <result column="update_at" property="updateAt" />
+  </resultMap>
+
+<!--  <resultMap id="AccountInfoMap" type="service.com.nexfly.system.SystemService$AccountInfo">
+    <result column="name" property="name" />
+    <result column="email" property="email" />
+    <collection property="orgList" ofType="service.com.nexfly.system.SystemService$OrgInfo" javaType="java.util.List">
+      <result column="org_id" property="orgId"/>
+      <result column="org_name" property="name"/>
+    </collection>
+  </resultMap>-->
+
+  <sql id="Vo_Column_List">
+    `account_id`,`name`,`email`,`password`,`password_salt`,`avatar`,`language`,`theme`,`timezone`,`last_login_time`,`last_login_ip`,`status`,`create_at`,`update_at`
+  </sql>
+  <insert id="save">
+    insert into account (`account_id`,`name`,`email`,`password`,`password_salt`,`avatar`,`language`,`theme`,`timezone`,`last_login_time`,`last_login_ip`,`status`) values (#{account.accountId},#{account.name},#{account.email},#{account.password},#{account.passwordSalt},#{account.avatar},#{account.language},#{account.theme},#{account.timezone},#{account.lastLoginTime},#{account.lastLoginIp},#{account.status})
+  </insert>
+  <update id="update">
+    update account
+    <set>
+      <if test="account.name != null">
+        name = #{account.name,jdbcType=VARCHAR},
+      </if>
+      <if test="account.email != null">
+        email = #{account.email,jdbcType=VARCHAR},
+      </if>
+      <if test="account.password != null">
+        password = #{account.password,jdbcType=VARCHAR},
+      </if>
+      <if test="account.passwordSalt != null">
+        password_salt = #{account.passwordSalt,jdbcType=VARCHAR},
+      </if>
+      <if test="account.avatar != null">
+        avatar = #{account.avatar,jdbcType=VARCHAR},
+      </if>
+      <if test="account.language != null">
+        language = #{account.language,jdbcType=VARCHAR},
+      </if>
+      <if test="account.theme != null">
+        theme = #{account.theme,jdbcType=VARCHAR},
+      </if>
+      <if test="account.timezone != null">
+        timezone = #{account.timezone,jdbcType=VARCHAR},
+      </if>
+      <if test="account.lastLoginTime != null">
+        last_login_time = #{account.lastLoginTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="account.lastLoginIp != null">
+        last_login_ip = #{account.lastLoginIp,jdbcType=VARCHAR},
+      </if>
+      <if test="account.status != null">
+        status = #{account.status,jdbcType=INTEGER},
+      </if>
+      <if test="account.createAt != null">
+        create_at = #{account.createAt,jdbcType=TIMESTAMP},
+      </if>
+      <if test="account.updateAt != null">
+        update_at = #{account.updateAt,jdbcType=TIMESTAMP},
+      </if>
+    </set>
+    where account_id = #{account.accountId,jdbcType=BIGINT}
+     
+  </update>
+  <select id="findById" resultMap="BaseResultMap">
+    select <include refid="Vo_Column_List"/> from account where account_id = #{accountId}
+  </select>
+  <select id="getAccountByEmail" resultType="com.nexfly.system.model.Account">
+    select <include refid="Vo_Column_List"/> from account where email = #{email}
+  </select>
+  <select id="getUserOrgList" resultType="com.nexfly.system.service.SystemService$Org">
+    select o.org_id, o.name as org_name from account_org ao
+    left join organization o on ao.org_id = o.org_id
+    where ao.account_id = #{accountId}
+  </select>
+</mapper>

@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.nexfly.system.mapper.ProviderMapper">
+  <resultMap id="BaseResultMap" type="com.nexfly.system.model.Provider">
+    <id column="provider_id" property="providerId" />
+    <result column="org_id" property="orgId" />
+    <result column="provider_name" property="providerName" />
+    <result column="create_at" property="createAt" />
+    <result column="update_at" property="updateAt" />
+  </resultMap>
+  <sql id="Vo_Column_List">
+    `provider_id`,`org_id`,`provider_name`,`create_at`,`update_at`,`config`
+  </sql>
+  <insert id="save">
+    insert into provider (`provider_id`,`org_id`,`provider_name`,`config`) values (#{provider.providerId},#{provider.orgId},#{provider.providerName},#{provider.config})
+  </insert>
+  <update id="update">
+    update provider
+    <set>
+      <if test="provider.orgId != null">
+        org_id = #{provider.orgId,jdbcType=BIGINT},
+      </if>
+      <if test="provider.providerName != null">
+        provider_name = #{provider.providerName,jdbcType=VARCHAR},
+      </if>
+      <if test="provider.createAt != null">
+        create_at = #{provider.createAt,jdbcType=TIMESTAMP},
+      </if>
+      <if test="provider.updateAt != null">
+        update_at = #{provider.updateAt,jdbcType=TIMESTAMP},
+      </if>
+    </set>
+    where provider_id = #{provider.providerId,jdbcType=BIGINT}
+     
+  </update>
+  <select id="findById" resultMap="BaseResultMap">
+    select <include refid="Vo_Column_List"/> from provider where provider_id = #{providerId}
+  </select>
+    <select id="getListByOrgId" resultMap="BaseResultMap">
+      select <include refid="Vo_Column_List"/> from provider where org_id = #{orgId}
+    </select>
+    <select id="list" resultMap="BaseResultMap">
+      select <include refid="Vo_Column_List"/> from provider
+    </select>
+</mapper>

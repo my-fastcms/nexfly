@@ -1,0 +1,34 @@
+provider: openai
+label: OpenAI
+description: OpenAI 提供的模型，例如 GPT-3.5-Turbo 和 GPT-4。
+iconSmall: icon_s.svg
+iconLarge: icon_l.svg
+background: "#E5E7EB"
+help:
+  title: 从 OpenAI 获取 API Key
+  url: https://platform.openai.com/account/api-keys
+supportedModelTypes:
+  - llm
+  - text-embedding
+  - speech2text
+  - tts
+configurateMethods:
+  - predefined-model
+  - customizable-model
+modelCredentials:
+  - variable: openai_api_key
+    label: API Key
+    type: secret-input
+    required: true
+    placeholder: 在此输入您的 API Key
+  - variable: openai_organization
+    label: 组织 ID
+    type: text-input
+    required: false
+    placeholder: 在此输入您的组织 ID
+  - variable: openai_api_base
+    label: API Base
+    type: text-input
+    required: false
+    placeholder: 在此输入您的 API Base, 如：https://api.openai.com
+

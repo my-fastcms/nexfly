@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.nexfly.system.mapper.AppMapper">
+  <resultMap id="BaseResultMap" type="com.nexfly.system.model.App">
+    <id column="app_id" property="appId" />
+    <result column="org_id" property="orgId" />
+    <result column="name" property="name" />
+    <result column="description" property="description" />
+    <result column="app_type" property="appType" />
+    <result column="status" property="status" />
+    <result column="icon" property="icon" />
+    <result column="flow_id" property="flowId" />
+    <result column="create_at" property="createAt" />
+    <result column="update_at" property="updateAt" />
+    <result column="create_by" property="createBy" />
+    <result column="update_by" property="updateBy" />
+  </resultMap>
+  <sql id="Vo_Column_List">
+    `app_id`,`org_id`,`name`,`description`,`app_type`,`status`,`icon`,`flow_id`,`create_at`,`update_at`,`create_by`,`update_by`
+  </sql>
+  <insert id="save">
+    insert into app (`app_id`,`org_id`,`name`,`description`,`app_type`,`status`,`icon`,`flow_id`,`create_by`,`update_by`) values (#{app.appId},#{app.orgId},#{app.name},#{app.description},#{app.appType},#{app.status},#{app.icon},#{app.flowId},#{app.createBy},#{app.updateBy})
+  </insert>
+  <update id="update">
+    update app
+    <set>
+      <if test="app.orgId != null">
+        org_id = #{app.orgId,jdbcType=BIGINT},
+      </if>
+      <if test="app.name != null">
+        name = #{app.name,jdbcType=VARCHAR},
+      </if>
+      <if test="app.description != null">
+        description = #{app.description,jdbcType=VARCHAR},
+      </if>
+      <if test="app.appType != null">
+        app_type = #{app.appType,jdbcType=VARCHAR},
+      </if>
+      <if test="app.status != null">
+        status = #{app.status,jdbcType=INTEGER},
+      </if>
+      <if test="app.icon != null">
+        icon = #{app.icon,jdbcType=VARCHAR},
+      </if>
+      <if test="app.flowId != null">
+        flow_id = #{app.flowId,jdbcType=VARCHAR},
+      </if>
+      <if test="app.createAt != null">
+        create_at = #{app.createAt,jdbcType=TIMESTAMP},
+      </if>
+      <if test="app.updateAt != null">
+        update_at = #{app.updateAt,jdbcType=TIMESTAMP},
+      </if>
+      <if test="app.createBy != null">
+        create_by = #{app.createBy,jdbcType=BIGINT},
+      </if>
+      <if test="app.updateBy != null">
+        update_by = #{app.updateBy,jdbcType=BIGINT},
+      </if>
+    </set>
+    where app_id = #{app.appId,jdbcType=BIGINT}
+     
+  </update>
+  <select id="findById" resultMap="BaseResultMap">
+    select <include refid="Vo_Column_List"/> from app where app_id = #{appId}
+  </select>
+</mapper>

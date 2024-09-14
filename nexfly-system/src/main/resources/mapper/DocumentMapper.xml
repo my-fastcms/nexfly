@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.nexfly.system.mapper.DocumentMapper">
+  <resultMap id="BaseResultMap" type="com.nexfly.system.model.Document">
+    <id column="document_id" property="documentId" />
+    <result column="org_id" property="orgId" />
+    <result column="dataset_id" property="datasetId" />
+    <result column="name" property="name" />
+    <result column="data_source" property="dataSource" />
+    <result column="word_count" property="wordCount" />
+    <result column="token_count" property="tokenCount" />
+    <result column="data_url" property="dataUrl" />
+    <result column="create_at" property="createAt" />
+    <result column="create_by" property="createBy" />
+    <result column="update_at" property="updateAt" />
+    <result column="update_by" property="updateBy" />
+  </resultMap>
+  <sql id="Vo_Column_List">
+    `document_id`,`org_id`,`dataset_id`,`name`,`data_source`,`word_count`,`token_count`,`data_url`,`"index_node_id"`,`create_at`,`create_by`,`update_at`,`update_by`
+  </sql>
+  <insert id="save" useGeneratedKeys="true" keyProperty="documentId" keyColumn="document_id" parameterType="com.nexfly.system.model.Document">
+    insert into document (`org_id`,`dataset_id`,`name`,`data_source`,`word_count`,`token_count`,`data_url`,`create_by`,`update_by`) values (#{document.orgId},#{document.datasetId},#{document.name},#{document.dataSource},#{document.wordCount},#{document.tokenCount},#{document.dataUrl},#{document.createBy},#{document.updateBy})
+  </insert>
+  <update id="update">
+    update document
+    <set>
+      <if test="document.orgId != null">
+        org_id = #{document.orgId,jdbcType=BIGINT},
+      </if>
+      <if test="document.datasetId != null">
+        dataset_id = #{document.datasetId,jdbcType=BIGINT},
+      </if>
+      <if test="document.name != null">
+        name = #{document.name,jdbcType=VARCHAR},
+      </if>
+      <if test="document.dataSource != null">
+        data_source = #{document.dataSource,jdbcType=INTEGER},
+      </if>
+      <if test="document.wordCount != null">
+        word_count = #{document.wordCount,jdbcType=INTEGER},
+      </if>
+      <if test="document.tokenCount != null">
+        token_count = #{document.tokenCount,jdbcType=INTEGER},
+      </if>
+      <if test="document.dataUrl != null">
+        data_url = #{document.dataUrl,jdbcType=VARCHAR},
+      </if>
+      <if test="document.indexNodeId != null">
+        index_node_id = #{document.indexNodeId,jdbcType=VARCHAR},
+      </if>
+      <if test="document.createAt != null">
+        create_at = #{document.createAt,jdbcType=TIMESTAMP},
+      </if>
+      <if test="document.createBy != null">
+        create_by = #{document.createBy,jdbcType=BIGINT},
+      </if>
+      <if test="document.updateAt != null">
+        update_at = #{document.updateAt,jdbcType=TIMESTAMP},
+      </if>
+      <if test="document.updateBy != null">
+        update_by = #{document.updateBy,jdbcType=BIGINT},
+      </if>
+    </set>
+    where document_id = #{document.documentId,jdbcType=BIGINT}
+     
+  </update>
+  <select id="findById" resultMap="BaseResultMap">
+    select <include refid="Vo_Column_List"/> from document where document_id = #{documentId}
+  </select>
+  <select id="findDocumentListByDatasetId" resultType="com.nexfly.system.model.Document">
+    select * from document where dataset_id = #{datasetId}
+  </select>
+</mapper>

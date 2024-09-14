@@ -1,0 +1,9 @@
+provider: zhipu
+model: embedding-2
+modelType: text-embedding
+modelProperties:
+  contextSize: 8192
+pricing:
+  input: '0.0005'
+  unit: '0.001'
+  currency: RMB

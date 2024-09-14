@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.nexfly.system.mapper.AppModelMapper">
+  <resultMap id="BaseResultMap" type="com.nexfly.system.model.AppModel">
+    <id column="app_model_id" property="appModelId" />
+    <result column="app_id" property="appId" />
+    <result column="model_id" property="modelId" />
+    <result column="model_config" property="modelConfig" />
+    <result column="create_at" property="createAt" />
+    <result column="create_by" property="createBy" />
+    <result column="update_at" property="updateAt" />
+    <result column="update_by" property="updateBy" />
+  </resultMap>
+  <sql id="Vo_Column_List">
+    `app_model_id`,`app_id`,`model_id`,`create_at`,`create_by`,`update_at`,`update_by`,`model_config`
+  </sql>
+  <insert id="save">
+    insert into app_model (`app_model_id`,`app_id`,`model_id`,`create_by`,`update_by`,`model_config`) values (#{appModel.appModelId},#{appModel.appId},#{appModel.modelId},#{appModel.createBy},#{appModel.updateBy},#{appModel.modelConfig})
+  </insert>
+  <update id="update">
+    update app_model
+    <set>
+      <if test="appModel.appId != null">
+        app_id = #{appModel.appId,jdbcType=BIGINT},
+      </if>
+      <if test="appModel.modelId != null">
+        model_id = #{appModel.modelId,jdbcType=BIGINT},
+      </if>
+      <if test="appModel.createAt != null">
+        create_at = #{appModel.createAt,jdbcType=TIMESTAMP},
+      </if>
+      <if test="appModel.createBy != null">
+        create_by = #{appModel.createBy,jdbcType=BIGINT},
+      </if>
+      <if test="appModel.updateAt != null">
+        update_at = #{appModel.updateAt,jdbcType=TIMESTAMP},
+      </if>
+      <if test="appModel.updateBy != null">
+        update_by = #{appModel.updateBy,jdbcType=BIGINT},
+      </if>
+    </set>
+    where app_model_id = #{appModel.appModelId,jdbcType=BIGINT}
+     
+  </update>
+  <select id="findById" resultMap="BaseResultMap">
+    select <include refid="Vo_Column_List"/> from app_model where app_model_id = #{appModelId}
+  </select>
+    <select id="findByAppId" resultMap="BaseResultMap">
+      select <include refid="Vo_Column_List"/> from app_model where app_id = #{appId}
+    </select>
+</mapper>

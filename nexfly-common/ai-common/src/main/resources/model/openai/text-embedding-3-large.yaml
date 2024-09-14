@@ -1,0 +1,10 @@
+provider: openai
+model: text-embedding-3-large
+modelType: text-embedding
+modelProperties:
+  contextSize: 8191
+  maxChunks: 32
+pricing:
+  input: '0.00013'
+  unit: '0.001'
+  currency: USD

@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.nexfly.system.mapper.OrganizationMapper">
+  <resultMap id="BaseResultMap" type="com.nexfly.system.model.Organization">
+    <id column="org_id" property="orgId" />
+    <result column="name" property="name" />
+    <result column="status" property="status" />
+    <result column="create_at" property="createAt" />
+    <result column="update_at" property="updateAt" />
+  </resultMap>
+  <sql id="Vo_Column_List">
+    `org_id`,`name`,`status`,`create_at`,`update_at`
+  </sql>
+  <insert id="save">
+    insert into organization (`org_id`,`name`,`status`,`create_by`,`update_by`) values (#{organization.orgId},#{organization.name},#{organization.status},#{organization.createBy},#{organization.updateBy})
+  </insert>
+  <update id="update">
+    update organization
+    <set>
+      <if test="organization.name != null">
+        name = #{organization.name,jdbcType=VARCHAR},
+      </if>
+      <if test="organization.status != null">
+        status = #{organization.status,jdbcType=INTEGER},
+      </if>
+      <if test="organization.createAt != null">
+        create_at = #{organization.createAt,jdbcType=TIMESTAMP},
+      </if>
+      <if test="organization.updateAt != null">
+        update_at = #{organization.updateAt,jdbcType=TIMESTAMP},
+      </if>
+    </set>
+    where org_id = #{organization.orgId,jdbcType=BIGINT}
+     
+  </update>
+  <select id="findById" resultMap="BaseResultMap">
+    select <include refid="Vo_Column_List"/> from organization where org_id = #{orgId}
+  </select>
+</mapper>

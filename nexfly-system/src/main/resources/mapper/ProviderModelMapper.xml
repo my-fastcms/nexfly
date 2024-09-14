@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.nexfly.system.mapper.ProviderModelMapper">
+  <resultMap id="BaseResultMap" type="com.nexfly.system.model.ProviderModel">
+    <id column="model_id" property="modelId" />
+    <result column="org_id" property="orgId" />
+    <result column="provider_name" property="providerName" />
+    <result column="model_name" property="modelName" />
+    <result column="model_type" property="modelType" />
+    <result column="model_config" property="modelConfig" />
+    <result column="create_at" property="createAt" />
+    <result column="update_at" property="updateAt" />
+  </resultMap>
+  <sql id="Vo_Column_List">
+    `model_id`,`org_id`,`provider_name`,`model_name`,`model_type`,`model_config`,`create_at`,`update_at`
+  </sql>
+  <insert id="save">
+    insert into provider_model (`model_id`,`org_id`,`provider_name`,`model_name`,`model_type`, `model_config`) values (#{providerModel.modelId},#{providerModel.orgId},#{providerModel.providerName},#{providerModel.modelName},#{providerModel.modelType},#{providerModel.modelConfig})
+  </insert>
+  <update id="update">
+    update provider_model
+    <set>
+      <if test="providerModel.orgId != null">
+        org_id = #{providerModel.orgId,jdbcType=BIGINT},
+      </if>
+      <if test="providerModel.providerName != null">
+        provider_name = #{providerModel.providerName,jdbcType=VARCHAR},
+      </if>
+      <if test="providerModel.modelName != null">
+        model_name = #{providerModel.modelName,jdbcType=VARCHAR},
+      </if>
+      <if test="providerModel.modelType != null">
+        model_type = #{providerModel.modelType,jdbcType=VARCHAR},
+      </if>
+      <if test="providerModel.modelConfig != null">
+        model_config = #{providerModel.modelConfig,jdbcType=VARCHAR},
+      </if>
+      <if test="providerModel.createAt != null">
+        create_at = #{providerModel.createAt,jdbcType=TIMESTAMP},
+      </if>
+      <if test="providerModel.updateAt != null">
+        update_at = #{providerModel.updateAt,jdbcType=TIMESTAMP},
+      </if>
+    </set>
+    where model_id = #{providerModel.modelId,jdbcType=BIGINT}
+     
+  </update>
+  <select id="findById" resultMap="BaseResultMap">
+    select <include refid="Vo_Column_List"/> from provider_model where model_id = #{modelId}
+  </select>
+    <select id="getListByOrgId" resultMap="BaseResultMap">
+      select <include refid="Vo_Column_List"/> from provider_model where org_id = #{orgId}
+    </select>
+  <select id="list" resultMap="BaseResultMap">
+    select <include refid="Vo_Column_List"/> from provider_model
+  </select>
+  <select id="getProviderModelByOrgAndName" resultMap="BaseResultMap">
+    select <include refid="Vo_Column_List"/> from provider_model where org_id = #{orgId} and model_name = #{modelName}
+  </select>
+</mapper>

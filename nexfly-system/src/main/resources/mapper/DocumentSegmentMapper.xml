@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.nexfly.system.mapper.DocumentSegmentMapper">
+  <resultMap id="BaseResultMap" type="com.nexfly.system.model.DocumentSegment">
+    <id column="segment_id" property="segmentId" />
+    <result column="document_id" property="documentId" />
+    <result column="org_id" property="orgId" />
+    <result column="dataset_id" property="datasetId" />
+    <result column="position" property="position" />
+    <result column="word_count" property="wordCount" />
+    <result column="token_count" property="tokenCount" />
+    <result column="status" property="status" />
+    <result column="hit_count" property="hitCount" />
+    <result column="create_at" property="createAt" />
+    <result column="create_by" property="createBy" />
+    <result column="update_at" property="updateAt" />
+    <result column="update_by" property="updateBy" />
+  </resultMap>
+  <sql id="Vo_Column_List">
+    `segment_id`,`document_id`,`org_id`,`dataset_id`,`position`,`word_count`,`token_count`,`status`,`hit_count`,`create_at`,`create_by`,`update_at`,`update_by`,`content`,`content_id`,`keywords`
+  </sql>
+  <insert id="save">
+    insert into document_segment (`segment_id`,`document_id`,`org_id`,`dataset_id`,`position`,`word_count`,`token_count`,`status`,`hit_count`,`create_by`,`update_by`,`content`,`content_id`,`keywords`) values (#{documentSegment.segmentId},#{documentSegment.documentId},#{documentSegment.orgId},#{documentSegment.datasetId},#{documentSegment.position},#{documentSegment.wordCount},#{documentSegment.tokenCount},#{documentSegment.status},#{documentSegment.hitCount},#{documentSegment.createBy},#{documentSegment.updateBy},#{documentSegment.content},#{documentSegment.contentId},#{documentSegment.keywords})
+  </insert>
+  <update id="update">
+    update document_segment
+    <set>
+      <if test="documentSegment.documentId != null">
+        document_id = #{documentSegment.documentId,jdbcType=BIGINT},
+      </if>
+      <if test="documentSegment.orgId != null">
+        org_id = #{documentSegment.orgId,jdbcType=BIGINT},
+      </if>
+      <if test="documentSegment.datasetId != null">
+        dataset_id = #{documentSegment.datasetId,jdbcType=BIGINT},
+      </if>
+      <if test="documentSegment.position != null">
+        position = #{documentSegment.position,jdbcType=INTEGER},
+      </if>
+      <if test="documentSegment.wordCount != null">
+        word_count = #{documentSegment.wordCount,jdbcType=INTEGER},
+      </if>
+      <if test="documentSegment.tokenCount != null">
+        token_count = #{documentSegment.tokenCount,jdbcType=INTEGER},
+      </if>
+      <if test="documentSegment.status != null">
+        status = #{documentSegment.status,jdbcType=INTEGER},
+      </if>
+      <if test="documentSegment.hitCount != null">
+        hit_count = #{documentSegment.hitCount,jdbcType=INTEGER},
+      </if>
+      <if test="documentSegment.createAt != null">
+        create_at = #{documentSegment.createAt,jdbcType=TIMESTAMP},
+      </if>
+      <if test="documentSegment.createBy != null">
+        create_by = #{documentSegment.createBy,jdbcType=BIGINT},
+      </if>
+      <if test="documentSegment.updateAt != null">
+        update_at = #{documentSegment.updateAt,jdbcType=TIMESTAMP},
+      </if>
+      <if test="documentSegment.updateBy != null">
+        update_by = #{documentSegment.updateBy,jdbcType=BIGINT},
+      </if>
+    </set>
+    where segment_id = #{documentSegment.segmentId,jdbcType=BIGINT}
+     
+  </update>
+  <select id="findById" resultMap="BaseResultMap">
+    select <include refid="Vo_Column_List"/> from document_segment where segment_id = #{segmentId}
+  </select>
+</mapper>
