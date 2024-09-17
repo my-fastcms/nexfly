@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.nexfly.system.mapper.AppConversationMapper">
+  <resultMap id="BaseResultMap" type="com.nexfly.system.model.AppConversation">
+    <id column="conversation_id" property="conversationId" />
+    <result column="name" property="name" />
+    <result column="app_id" property="appId" />
+    <result column="create_by" property="createBy" />
+    <result column="create_at" property="createAt" />
+    <result column="update_by" property="updateBy" />
+    <result column="update_at" property="updateAt" />
+  </resultMap>
+  <sql id="Vo_Column_List">
+    `conversation_id`,`name`,`app_id`,`create_by`,`create_at`,`update_by`,`update_at`
+  </sql>
+  <insert id="save" useGeneratedKeys="true" keyProperty="conversationId" keyColumn="conversation_id" parameterType="com.nexfly.system.model.AppConversation">
+    insert into app_conversation (`conversation_id`,`name`,`app_id`,`create_by`,`update_by`) values (#{appConversation.conversationId},#{appConversation.name},#{appConversation.appId},#{appConversation.createBy},#{appConversation.updateBy})
+  </insert>
+  <update id="update">
+    update app_conversation
+    <set>
+      <if test="appConversation.name != null">
+        name = #{appConversation.name,jdbcType=VARCHAR},
+      </if>
+      <if test="appConversation.appId != null">
+        app_id = #{appConversation.appId,jdbcType=BIGINT},
+      </if>
+      <if test="appConversation.createBy != null">
+        create_by = #{appConversation.createBy,jdbcType=BIGINT},
+      </if>
+      <if test="appConversation.createAt != null">
+        create_at = #{appConversation.createAt,jdbcType=TIMESTAMP},
+      </if>
+      <if test="appConversation.updateBy != null">
+        update_by = #{appConversation.updateBy,jdbcType=BIGINT},
+      </if>
+      <if test="appConversation.updateAt != null">
+        update_at = #{appConversation.updateAt,jdbcType=TIMESTAMP},
+      </if>
+    </set>
+    where conversation_id = #{appConversation.conversationId,jdbcType=BIGINT}
+     
+  </update>
+  <delete id="delete">
+    delete from app_conversation where app_id = #{appId} and conversation_id = #{conversationId}
+  </delete>
+  <select id="findById" resultMap="BaseResultMap">
+    select <include refid="Vo_Column_List"/> from app_conversation where conversation_id = #{conversationId}
+  </select>
+    <select id="findListByAppId" resultMap="BaseResultMap">
+      select <include refid="Vo_Column_List"/> from app_conversation where app_id = #{appId}
+    </select>
+</mapper>

@@ -44,6 +44,7 @@ public class AuthFilter implements Filter {
             } catch (ExpiredJwtException | SignatureException e) {
                 httpServletResponse.sendError(HttpServletResponse.SC_UNAUTHORIZED, e.getMessage());
             } catch (Exception e) {
+                e.printStackTrace();
                 throw new RuntimeException(e.getMessage());
             }
         }

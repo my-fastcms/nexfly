@@ -6,6 +6,8 @@ import com.nexfly.system.service.DatasetService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 /**
  * @Author wangjun
  * @Date 2024/9/9
@@ -23,6 +25,11 @@ public class DatasetServiceImpl implements DatasetService {
         } else {
             datasetMapper.save(dataset);
         }
+    }
+
+    @Override
+    public List<Dataset> list(Long userId) {
+        return datasetMapper.findDatasetList(userId);
     }
 
 }

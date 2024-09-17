@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.nexfly.system.mapper.AppMessageMapper">
+  <resultMap id="BaseResultMap" type="com.nexfly.system.model.AppMessage">
+    <id column="message_id" property="messageId" />
+    <result column="conversation_id" property="conversationId" />
+    <result column="app_id" property="appId" />
+    <result column="message" property="message" />
+    <result column="create_by" property="createBy" />
+    <result column="create_at" property="createAt" />
+    <result column="update_by" property="updateBy" />
+    <result column="update_at" property="updateAt" />
+  </resultMap>
+  <sql id="Vo_Column_List">
+    `message_id`,`conversation_id`,`app_id`,`message`,`create_by`,`create_at`,`update_by`,`update_at`,`content`
+  </sql>
+  <insert id="save">
+    insert into app_message (`message_id`,`conversation_id`,`app_id`,`message`,`create_by`,`update_by`,`content`) values (#{appMessage.messageId},#{appMessage.conversationId},#{appMessage.appId},#{appMessage.message},#{appMessage.createBy},#{appMessage.updateBy},#{appMessage.content})
+  </insert>
+  <update id="update">
+    update app_message
+    <set>
+      <if test="appMessage.conversationId != null">
+        conversation_id = #{appMessage.conversationId,jdbcType=BIGINT},
+      </if>
+      <if test="appMessage.appId != null">
+        app_id = #{appMessage.appId,jdbcType=BIGINT},
+      </if>
+      <if test="appMessage.message != null">
+        message = #{appMessage.message,jdbcType=VARCHAR},
+      </if>
+      <if test="appMessage.createBy != null">
+        create_by = #{appMessage.createBy,jdbcType=BIGINT},
+      </if>
+      <if test="appMessage.createAt != null">
+        create_at = #{appMessage.createAt,jdbcType=TIMESTAMP},
+      </if>
+      <if test="appMessage.updateBy != null">
+        update_by = #{appMessage.updateBy,jdbcType=BIGINT},
+      </if>
+      <if test="appMessage.updateAt != null">
+        update_at = #{appMessage.updateAt,jdbcType=TIMESTAMP},
+      </if>
+    </set>
+    where message_id = #{appMessage.messageId,jdbcType=BIGINT}
+     
+  </update>
+  <select id="findById" resultMap="BaseResultMap">
+    select <include refid="Vo_Column_List"/> from app_message where message_id = #{messageId}
+  </select>
+</mapper>

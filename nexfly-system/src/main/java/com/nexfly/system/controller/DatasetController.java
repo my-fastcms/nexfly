@@ -1,15 +1,15 @@
 package com.nexfly.system.controller;
 
+import com.nexfly.common.auth.utils.AuthUtils;
 import com.nexfly.common.core.constants.NexflyConstants;
+import com.nexfly.common.core.rest.RestResult;
 import com.nexfly.common.core.rest.RestResultUtils;
 import com.nexfly.system.model.Dataset;
 import com.nexfly.system.service.DatasetService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -29,6 +29,11 @@ public class DatasetController {
         dataset.setVsIndexNodeId(className);
         datasetService.save(dataset);
         return RestResultUtils.success();
+    }
+
+    @GetMapping("list")
+    public RestResult<List<Dataset>> list() {
+        return RestResultUtils.success(datasetService.list(AuthUtils.getUserId()));
     }
 
 }

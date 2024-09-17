@@ -64,4 +64,7 @@
   <select id="findById" resultMap="BaseResultMap">
     select <include refid="Vo_Column_List"/> from app where app_id = #{appId}
   </select>
+    <select id="list" resultMap="BaseResultMap">
+      select <include refid="Vo_Column_List"/> from app where create_by = #{userId} order by create_at desc
+    </select>
 </mapper>

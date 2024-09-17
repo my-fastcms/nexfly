@@ -168,9 +168,9 @@ public class TongYiAiApi {
             @JsonProperty("stop") List<String> stop,
             @JsonProperty("stream") Boolean stream,
             @JsonProperty("stream_options") StreamOptions streamOptions,
-            @JsonProperty("temperature") Float temperature,
+            @JsonProperty("temperature") Double temperature,
             @JsonProperty("presence_penalty") Float presencePenalty,
-            @JsonProperty("top_p") Float topP,
+            @JsonProperty("top_p") Double topP,
             @JsonProperty("tools") List<FunctionTool> tools,
             @JsonProperty("tool_choice") Object toolChoice,
             @JsonProperty("user") String user,
@@ -183,7 +183,7 @@ public class TongYiAiApi {
          * @param model ID of the model to use.
          * @param temperature What sampling temperature to use, between 0 and 1.
          */
-        public ChatCompletionRequest(List<ChatCompletionMessage> messages, String model, Float temperature) {
+        public ChatCompletionRequest(List<ChatCompletionMessage> messages, String model, Double temperature) {
             this(messages, model, null,  null, null, false, null, temperature, null, null, null, null, null, null);
         }
 
@@ -196,7 +196,7 @@ public class TongYiAiApi {
          * @param stream If set, partial message deltas will be sent.Tokens will be sent as data-only server-sent events
          * as they become available, with the stream terminated by a data: [DONE] message.
          */
-        public ChatCompletionRequest(List<ChatCompletionMessage> messages, String model, Float temperature, boolean stream) {
+        public ChatCompletionRequest(List<ChatCompletionMessage> messages, String model, Double temperature, boolean stream) {
             this(messages, model, null,  null, null, stream, null, temperature, null,
                     null, null, null, null, null);
         }
@@ -212,7 +212,7 @@ public class TongYiAiApi {
          */
         public ChatCompletionRequest(List<ChatCompletionMessage> messages, String model,
                                      List<FunctionTool> tools, Object toolChoice) {
-            this(messages, model, null, null, null, false, null, 0.8f, null, null, tools, toolChoice, null, null);
+            this(messages, model, null, null, null, false, null, 0.8d, null, null, tools, toolChoice, null, null);
         }
 
         /**

@@ -9,12 +9,14 @@ import com.nexfly.system.manager.ModelManager;
 import com.nexfly.system.mapper.*;
 import com.nexfly.system.model.*;
 import com.nexfly.system.service.AppService;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.client.advisor.PromptChatMemoryAdvisor;
 import org.springframework.ai.chat.client.advisor.QuestionAnswerAdvisor;
 import org.springframework.ai.chat.client.advisor.api.Advisor;
 import org.springframework.ai.chat.memory.InMemoryChatMemory;
 import org.springframework.ai.chat.messages.Message;
+import org.springframework.ai.chat.messages.UserMessage;
 import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.ai.chat.prompt.SystemPromptTemplate;
 import org.springframework.ai.embedding.EmbeddingModel;
@@ -59,9 +61,25 @@ public class AppServiceImpl implements AppService {
     @Autowired
     private FunctionManager functionManager;
 
+    @Autowired
+    private AppConversationMapper appConversationMapper;
+
     @Override
-    public Flux<String> chat(Long appId, String message) throws Exception {
-        App app = appMapper.findById(appId);
+    public App findById(Long appId) {
+        return appMapper.findById(appId);
+    }
+
+    @Override
+    public List<App> list(Long userId) {
+        return appMapper.list(userId);
+    }
+
+    @Override
+    public Flux<ChatResponse> chat(@NotNull NexflyMessage message) throws Exception {
+
+        AppConversation appConversation = appConversationMapper.findById(message.conversationId());
+
+        App app = appMapper.findById(appConversation.getAppId());
 
         // 查询app关联的大语言模型
         AppModel appModel = appModelMapper.findByAppId(app.getAppId());
@@ -92,11 +110,19 @@ public class AppServiceImpl implements AppService {
         SystemPromptTemplate systemPromptTemplate = new SystemPromptTemplate(system);
         Message systemMessage = formVariable == null ? systemPromptTemplate.createMessage() : systemPromptTemplate.createMessage(formVariable);
 
+        List<Message> messageList = new ArrayList<>();
+        message.messages().forEach(m -> {
+            if (m.content() != null) {
+                UserMessage userMessage = new UserMessage(m.content());
+                messageList.add(userMessage);
+            }
+        });
+
         ChatClient.ChatClientRequestSpec chatClientRequestSpec = ChatClient.builder(chatModel)
                 .build()
                 .prompt()
                 .system(systemMessage.getContent())
-                .user(message);
+                .messages(messageList);
 
         functionManager.getFunctionList().forEach(item -> chatClientRequestSpec.function(item.name(), item.description(), item.function()));
 
@@ -104,7 +130,37 @@ public class AppServiceImpl implements AppService {
                 .advisors(a -> a.param(USER_ID, AuthUtils.getUserId()))
                 .advisors(requestResponseAdvisorList)
                 .stream()
-                .content();
+                .chatResponse().map(r -> {
+                    if (r.getResult() == null || r.getResult().getOutput() == null
+                            || r.getResult().getOutput().getContent() == null) {
+                        return new ChatResponse("true");
+                    }
+                    return new ChatResponse(new ChatResponseData(r.getResult().getOutput().getContent(), systemMessage.getContent(), String.valueOf(message.conversationId())));
+                });
+    }
+
+    @Override
+    public List<AppConversation> getAppConversationList(Long appId) {
+        return appConversationMapper.findListByAppId(appId);
+    }
+
+    @Override
+    public AppConversation getAppConversation(Long appConversationId) {
+        return appConversationMapper.findById(appConversationId);
+    }
+
+    @Override
+    public void saveAppConversation(AppConversation appConversation) {
+        if (appConversation.getConversationId() != null) {
+            appConversationMapper.update(appConversation);
+        } else {
+            appConversationMapper.save(appConversation);
+        }
+    }
+
+    @Override
+    public void deleteAppConversation(Long appId, Long conversationId) {
+        appConversationMapper.delete(appId, conversationId);
     }
 
 }

@@ -65,7 +65,7 @@ public class TongYiChatModel extends AbstractToolCallSupport implements ChatMode
     private ChatModelObservationConvention observationConvention = DEFAULT_OBSERVATION_CONVENTION;
 
     public TongYiChatModel(TongYiAiApi tongYiAiApi) {
-        this(tongYiAiApi, TongYiChatOptions.builder().withModel(TongYiAiApi.DEFAULT_CHAT_MODEL).withTemperature(0.7f).build());
+        this(tongYiAiApi, TongYiChatOptions.builder().withModel(TongYiAiApi.DEFAULT_CHAT_MODEL).withTemperature(0.7).build());
     }
 
     public TongYiChatModel(TongYiAiApi tongYiAiApi, TongYiChatOptions options) {

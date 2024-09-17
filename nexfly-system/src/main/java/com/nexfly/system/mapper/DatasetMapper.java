@@ -14,4 +14,6 @@ public interface DatasetMapper {
 
     List<Dataset> findDatasetListByAppId(@Param("appId") Long appId);
 
+    List<Dataset> findDatasetList(@Param("userId") Long userId);
+
 }

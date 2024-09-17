@@ -61,4 +61,7 @@
     left join dataset d on ad.dataset_id = d.dataset_id
     where ad.app_id = #{appId}
   </select>
+    <select id="findDatasetList" resultType="com.nexfly.system.model.Dataset">
+      select * from dataset d where d.create_by = #{userId} order by d.update_at desc;
+    </select>
 </mapper>

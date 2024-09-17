@@ -14,10 +14,10 @@ public class TongYiChatModelFactory extends AbstractModelFactory {
 
     @Override
     Object doCreate(CreateModel createModel, JSONObject jsonObject) {
-        TongYiChatOptions.Builder builder = TongYiChatOptions.builder().withModel(getModelName()).withTemperature(0.7f);
+        TongYiChatOptions.Builder builder = TongYiChatOptions.builder().withModel(getModelName()).withTemperature(0.7);
 
         if (jsonObject.get("temperature") != null) {
-            builder.withTemperature(jsonObject.getFloat("temperature"));
+            builder.withTemperature(jsonObject.getDouble("temperature"));
         }
 
         return new TongYiChatModel(new TongYiAiApi(getApiKey()), builder.build());
