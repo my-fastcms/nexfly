@@ -9,4 +9,7 @@ public interface DocumentSegmentMapper {
     void save(@Param("documentSegment") DocumentSegment DocumentSegment);
 
     void update(@Param("documentSegment") DocumentSegment DocumentSegment);
+
+    Long getCountByDatasetId(@Param("datasetId") Long datasetId);
+
 }

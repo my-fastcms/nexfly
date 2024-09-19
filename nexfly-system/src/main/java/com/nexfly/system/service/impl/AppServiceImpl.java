@@ -7,14 +7,15 @@ import com.nexfly.ai.common.vectorstore.VectorStoreFactory;
 import com.nexfly.common.auth.utils.AuthUtils;
 import com.nexfly.system.manager.ModelManager;
 import com.nexfly.system.mapper.*;
+import com.nexfly.system.memory.NexflyChatMemory;
 import com.nexfly.system.model.*;
 import com.nexfly.system.service.AppService;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.ai.chat.client.ChatClient;
+import org.springframework.ai.chat.client.advisor.AbstractChatMemoryAdvisor;
 import org.springframework.ai.chat.client.advisor.PromptChatMemoryAdvisor;
 import org.springframework.ai.chat.client.advisor.QuestionAnswerAdvisor;
 import org.springframework.ai.chat.client.advisor.api.Advisor;
-import org.springframework.ai.chat.memory.InMemoryChatMemory;
 import org.springframework.ai.chat.messages.Message;
 import org.springframework.ai.chat.messages.UserMessage;
 import org.springframework.ai.chat.model.ChatModel;
@@ -64,6 +65,9 @@ public class AppServiceImpl implements AppService {
     @Autowired
     private AppConversationMapper appConversationMapper;
 
+    @Autowired
+    private AppMessageMapper appMessageMapper;
+
     @Override
     public App findById(Long appId) {
         return appMapper.findById(appId);
@@ -96,7 +100,7 @@ public class AppServiceImpl implements AppService {
         List<Dataset> datasetList = datasetMapper.findDatasetListByAppId(app.getAppId());
         // 根据dataset构建List<RequestResponseAdvisor>
         List<Advisor> requestResponseAdvisorList = new ArrayList<>();
-        requestResponseAdvisorList.add(new PromptChatMemoryAdvisor(new InMemoryChatMemory()));
+        requestResponseAdvisorList.add(new PromptChatMemoryAdvisor(new NexflyChatMemory(AuthUtils.getUserId(), app.getAppId(), appMessageMapper)));
         for (Dataset dataset : datasetList) {
             ProviderModel providerModel = providerModelMapper.findById(dataset.getEmbedModelId());
             EmbeddingModel embeddingModel = modelManager.getEmbeddingModel(app.getOrgId(), providerModel.getModelName());
@@ -122,12 +126,14 @@ public class AppServiceImpl implements AppService {
                 .build()
                 .prompt()
                 .system(systemMessage.getContent())
-                .messages(messageList);
+                .messages(messageList)
+                .user(messageList.get(messageList.size()-1).getContent());
 
         functionManager.getFunctionList().forEach(item -> chatClientRequestSpec.function(item.name(), item.description(), item.function()));
 
         return chatClientRequestSpec
-                .advisors(a -> a.param(USER_ID, AuthUtils.getUserId()))
+                .advisors(a -> a.param(USER_ID, AuthUtils.getUserId())
+                        .param(AbstractChatMemoryAdvisor.CHAT_MEMORY_CONVERSATION_ID_KEY, message.conversationId()))
                 .advisors(requestResponseAdvisorList)
                 .stream()
                 .chatResponse().map(r -> {
@@ -136,7 +142,12 @@ public class AppServiceImpl implements AppService {
                         return new ChatResponse("true");
                     }
                     return new ChatResponse(new ChatResponseData(r.getResult().getOutput().getContent(), systemMessage.getContent(), String.valueOf(message.conversationId())));
-                });
+                })
+                .onErrorResume(e -> {
+                    // 异常处理逻辑
+                    return Flux.just(new ChatResponse("Error occurred: " + e.getMessage()));
+                })
+                ;
     }
 
     @Override
@@ -145,8 +156,16 @@ public class AppServiceImpl implements AppService {
     }
 
     @Override
-    public AppConversation getAppConversation(Long appConversationId) {
-        return appConversationMapper.findById(appConversationId);
+    public Conversation getAppConversation(Long appConversationId) {
+        AppConversation appConversation = appConversationMapper.findById(appConversationId);
+        List<AppMessage> conversationLastNMessageList = appMessageMapper.getConversationLastNMessageList(appConversationId, 100);
+
+        List<ConversationMessage> conversationMessageList = new ArrayList<>();
+        for (AppMessage appMessage : conversationLastNMessageList) {
+            conversationMessageList.add(new ConversationMessage(appMessage.getContent(), appMessage.getRole(), String.valueOf(appMessage.getMessageId())));
+        }
+
+        return new Conversation(appConversation.getAppId(), appConversation.getConversationId(), conversationMessageList);
     }
 
     @Override

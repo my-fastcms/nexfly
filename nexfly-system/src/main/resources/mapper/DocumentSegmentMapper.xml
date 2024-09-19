@@ -68,4 +68,7 @@
   <select id="findById" resultMap="BaseResultMap">
     select <include refid="Vo_Column_List"/> from document_segment where segment_id = #{segmentId}
   </select>
+    <select id="getCountByDatasetId" resultType="java.lang.Long">
+      select count(1) from document_segment where dataset_id = #{datasetId}
+    </select>
 </mapper>

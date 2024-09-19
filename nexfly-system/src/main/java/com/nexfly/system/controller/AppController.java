@@ -44,7 +44,7 @@ public class AppController {
     }
 
     @GetMapping("conversation/get")
-    public RestResult<AppConversation> getConversation(@Param("conversationId") Long conversationId) {
+    public RestResult<AppService.Conversation> getConversation(@Param("conversationId") Long conversationId) {
         return RestResultUtils.success(appService.getAppConversation(conversationId));
     }
 

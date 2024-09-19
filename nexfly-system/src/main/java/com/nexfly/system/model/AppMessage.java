@@ -1,6 +1,7 @@
 package com.nexfly.system.model;
 
 import com.nexfly.common.model.BaseModel;
+
 import java.io.Serializable;
 
 public class AppMessage extends BaseModel implements Serializable {
@@ -10,7 +11,7 @@ public class AppMessage extends BaseModel implements Serializable {
 
     private Long appId;
 
-    private String message;
+    private String role;
 
     private String content;
 
@@ -40,12 +41,12 @@ public class AppMessage extends BaseModel implements Serializable {
         this.appId = appId;
     }
 
-    public String getMessage() {
-        return message;
+    public String getRole() {
+        return role;
     }
 
-    public void setMessage(String message) {
-        this.message = message;
+    public void setRole(String role) {
+        this.role = role;
     }
 
     public String getContent() {
@@ -65,7 +66,7 @@ public class AppMessage extends BaseModel implements Serializable {
         sb.append(", messageId=").append(messageId);
         sb.append(", conversationId=").append(conversationId);
         sb.append(", appId=").append(appId);
-        sb.append(", message=").append(message);
+        sb.append(", role=").append(role);
         sb.append(", content=").append(content);
         sb.append(", serialVersionUID=").append(serialVersionUID);
         sb.append("]");

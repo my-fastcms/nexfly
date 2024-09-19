@@ -33,14 +33,15 @@ public class CreatorInterceptor implements Interceptor {
             if (parameter instanceof Map<?,?>) {
                 parameter = ((MapperMethod.ParamMap) parameter).get("param1");
             }
-            // 假设你有一个静态方法来获取当前登录用户的 ID
-            Long userId = AuthUtils.getUserId();
-            if (userId != null) {
-                // 假设实体类有一个 setCreator() 方法
-                Method method = parameter.getClass().getSuperclass().getMethod("setCreateBy", Long.class);
-                method.invoke(parameter, userId);
-                method = parameter.getClass().getMethod("setUpdateBy", Long.class);
-                method.invoke(parameter, userId);
+            try {
+                if (AuthUtils.getUser() != null) {
+                    Method method = parameter.getClass().getSuperclass().getMethod("setCreateBy", Long.class);
+                    method.invoke(parameter, AuthUtils.getUserId());
+                    method = parameter.getClass().getMethod("setUpdateBy", Long.class);
+                    method.invoke(parameter, AuthUtils.getUserId());
+                }
+            } catch (Exception e) {
+                return invocation.proceed();
             }
         }
         return invocation.proceed();

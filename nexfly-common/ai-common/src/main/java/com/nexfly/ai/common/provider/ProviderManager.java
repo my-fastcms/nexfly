@@ -8,6 +8,10 @@ import java.util.List;
  **/
 public interface ProviderManager {
 
+    /**
+     * 获取系统支持配置的大模型提供商
+     * @return
+     */
     List<SystemProvider> getSystemProvider();
 
 }

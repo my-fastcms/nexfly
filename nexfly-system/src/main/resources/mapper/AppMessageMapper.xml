@@ -5,17 +5,17 @@
     <id column="message_id" property="messageId" />
     <result column="conversation_id" property="conversationId" />
     <result column="app_id" property="appId" />
-    <result column="message" property="message" />
+    <result column="role" property="role" />
     <result column="create_by" property="createBy" />
     <result column="create_at" property="createAt" />
     <result column="update_by" property="updateBy" />
     <result column="update_at" property="updateAt" />
   </resultMap>
   <sql id="Vo_Column_List">
-    `message_id`,`conversation_id`,`app_id`,`message`,`create_by`,`create_at`,`update_by`,`update_at`,`content`
+    `message_id`,`conversation_id`,`app_id`,`role`,`create_by`,`create_at`,`update_by`,`update_at`,`content`
   </sql>
   <insert id="save">
-    insert into app_message (`message_id`,`conversation_id`,`app_id`,`message`,`create_by`,`update_by`,`content`) values (#{appMessage.messageId},#{appMessage.conversationId},#{appMessage.appId},#{appMessage.message},#{appMessage.createBy},#{appMessage.updateBy},#{appMessage.content})
+    insert into app_message (`message_id`,`conversation_id`,`app_id`,`role`,`create_by`,`update_by`,`content`) values (#{appMessage.messageId},#{appMessage.conversationId},#{appMessage.appId},#{appMessage.role},#{appMessage.createBy},#{appMessage.updateBy},#{appMessage.content})
   </insert>
   <update id="update">
     update app_message
@@ -26,8 +26,8 @@
       <if test="appMessage.appId != null">
         app_id = #{appMessage.appId,jdbcType=BIGINT},
       </if>
-      <if test="appMessage.message != null">
-        message = #{appMessage.message,jdbcType=VARCHAR},
+      <if test="appMessage.role != null">
+        role = #{appMessage.role,jdbcType=VARCHAR},
       </if>
       <if test="appMessage.createBy != null">
         create_by = #{appMessage.createBy,jdbcType=BIGINT},
@@ -47,5 +47,8 @@
   </update>
   <select id="findById" resultMap="BaseResultMap">
     select <include refid="Vo_Column_List"/> from app_message where message_id = #{messageId}
+  </select>
+  <select id="getConversationLastNMessageList" resultMap="BaseResultMap">
+    select <include refid="Vo_Column_List"/> from app_message where conversation_id = #{conversationId} order by create_at asc limit 0, #{lastN}
   </select>
 </mapper>

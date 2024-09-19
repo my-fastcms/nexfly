@@ -14,4 +14,6 @@ public interface DocumentMapper {
 
     List<Document> findDocumentListByDatasetId(@Param("datasetId") Long datasetId);
 
+    Long getCountByDatasetId(@Param("datasetId") Long datasetId);
+
 }

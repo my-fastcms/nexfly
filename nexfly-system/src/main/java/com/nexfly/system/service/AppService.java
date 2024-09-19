@@ -21,7 +21,7 @@ public interface AppService {
 
     List<AppConversation> getAppConversationList(Long appId);
 
-    AppConversation getAppConversation(Long appConversationId);
+    Conversation getAppConversation(Long appConversationId);
 
     void saveAppConversation(AppConversation appConversation);
 
@@ -48,6 +48,10 @@ public interface AppService {
     }
 
     record NexflyMessage(Long conversationId, List<ConversationMessage> messages) {
+
+    }
+
+    record Conversation(Long appId, Long conversationId, List<ConversationMessage> message) {
 
     }
 

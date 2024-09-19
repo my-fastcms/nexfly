@@ -12,6 +12,10 @@ public interface DatasetService {
 
     void save(Dataset dataset);
 
-    List<Dataset> list(Long userId);
+    List<DatasetResponse> list(Long userId);
+
+    record DatasetResponse(Long datasetId, String name, String description, Long docNum, Long chunkNum) {
+
+    }
 
 }

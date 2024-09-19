@@ -32,7 +32,7 @@ public class DatasetController {
     }
 
     @GetMapping("list")
-    public RestResult<List<Dataset>> list() {
+    public RestResult<List<DatasetService.DatasetResponse>> list() {
         return RestResultUtils.success(datasetService.list(AuthUtils.getUserId()));
     }
 

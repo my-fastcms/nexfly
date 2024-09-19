@@ -70,4 +70,7 @@
   <select id="findDocumentListByDatasetId" resultType="com.nexfly.system.model.Document">
     select * from document where dataset_id = #{datasetId}
   </select>
+    <select id="getCountByDatasetId" resultType="java.lang.Long">
+      select count(1) from document where dataset_id = #{datasetId}
+    </select>
 </mapper>
