@@ -1,9 +1,11 @@
 package com.nexfly.system.service;
 
+import com.nexfly.common.core.exception.NexflyException;
 import com.nexfly.system.model.Provider;
 import com.nexfly.system.model.ProviderModel;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author wangjun
@@ -26,5 +28,17 @@ public interface ProviderService {
     List<Provider> getProviderList();
 
     ProviderModel getProviderModelByOrgAndName(Long orgId, String modelType);
+
+    void saveProviderModel(ProviderModel providerModel) throws NexflyException;
+
+    Map<String, Object> getUserAvailableProviderList();
+
+    record Llm(String name, String type, String usedToken) {
+
+    }
+
+    record LlmModel(List<Llm> llm, String tags) {
+
+    }
 
 }

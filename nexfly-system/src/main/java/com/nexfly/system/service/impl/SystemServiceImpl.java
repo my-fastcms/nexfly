@@ -29,4 +29,9 @@ public class SystemServiceImpl implements SystemService {
         return accountMapper.getUserOrgList(userId);
     }
 
+    @Override
+    public Org getUserOrg(Long userId) {
+        return accountMapper.getUserOrg(userId);
+    }
+
 }

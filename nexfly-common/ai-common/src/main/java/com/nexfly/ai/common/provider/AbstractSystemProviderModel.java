@@ -21,6 +21,7 @@ public class AbstractSystemProviderModel implements SystemProviderModel {
         this.provider = provider;
     }
 
+    @Override
     public String getModel() {
         return model;
     }
@@ -37,6 +38,7 @@ public class AbstractSystemProviderModel implements SystemProviderModel {
         this.label = label;
     }
 
+    @Override
     public String getModelType() {
         return modelType;
     }

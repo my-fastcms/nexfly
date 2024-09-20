@@ -30,4 +30,9 @@ public class AccountController {
         return RestResultUtils.success(systemService.getUserOrgList(AuthUtils.getUserId()));
     }
 
+    @GetMapping("org/get")
+    public RestResult<SystemService.Org> getUserOrg() {
+        return RestResultUtils.success(systemService.getUserOrg(AuthUtils.getUserId()));
+    }
+
 }

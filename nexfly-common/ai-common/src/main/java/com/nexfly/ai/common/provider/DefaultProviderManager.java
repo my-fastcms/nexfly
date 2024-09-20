@@ -25,8 +25,13 @@ public class DefaultProviderManager implements ProviderManager, InitializingBean
     List<SystemProviderModel> providerModelList = Collections.synchronizedList(new ArrayList<>());
 
     @Override
-    public List<SystemProvider> getSystemProvider() {
+    public List<SystemProvider> getSystemProviderList() {
         return providerList;
+    }
+
+    @Override
+    public Map<String, SystemProvider> getSystemProviderMap() {
+        return providerList.stream().collect(Collectors.toMap(SystemProvider::getProvider, SystemProvider -> SystemProvider));
     }
 
     @Override

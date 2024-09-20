@@ -8,4 +8,8 @@ public interface SystemProviderModel {
 
     String getProvider();
 
+    String getModel();
+
+    String getModelType();
+
 }

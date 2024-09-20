@@ -11,6 +11,8 @@ public interface AccountMapper {
 
     List<SystemService.Org> getUserOrgList(@Param("accountId") Long accountId);
 
+    SystemService.Org getUserOrg(@Param("accountId") Long accountId);
+
     void save(@Param("account") Account Account);
 
     void update(@Param("account") Account Account);

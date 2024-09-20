@@ -8,6 +8,8 @@ public class Provider extends BaseModel implements Serializable {
 
     private Long orgId;
 
+    private String label;
+
     private String providerName;
 
     private String config;
@@ -28,6 +30,14 @@ public class Provider extends BaseModel implements Serializable {
 
     public void setOrgId(Long orgId) {
         this.orgId = orgId;
+    }
+
+    public String getLabel() {
+        return label;
+    }
+
+    public void setLabel(String label) {
+        this.label = label;
     }
 
     public String getProviderName() {

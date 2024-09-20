@@ -1,8 +1,6 @@
 package com.nexfly.system.service;
 
 import com.nexfly.system.model.Account;
-import com.nexfly.system.model.Provider;
-import com.nexfly.system.model.ProviderModel;
 
 import java.io.Serializable;
 import java.util.List;
@@ -14,6 +12,8 @@ public interface SystemService {
     Account findById(Long userId);
 
     List<Org> getUserOrgList(Long userId);
+
+    Org getUserOrg(Long userId);
 
     class Org implements Serializable {
         Long orgId;

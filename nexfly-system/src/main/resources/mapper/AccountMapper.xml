@@ -90,4 +90,10 @@
     left join organization o on ao.org_id = o.org_id
     where ao.account_id = #{accountId}
   </select>
+  <select id="getUserOrg" resultType="com.nexfly.system.service.SystemService$Org">
+    select o.org_id, o.name as org_name from account_org ao
+    left join organization o on ao.org_id = o.org_id
+    where ao.account_id = #{accountId}
+    and ao.status = 1
+  </select>
 </mapper>
