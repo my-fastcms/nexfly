@@ -9,7 +9,7 @@ import org.springframework.stereotype.Service;
 /**
  * ollama
  */
-@Service("ollama-llm")
+@Service("ollama-chat")
 public class OllamaChatModelFactory extends AbstractModelFactory {
 
     @Override

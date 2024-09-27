@@ -1,7 +1,10 @@
 package com.nexfly.system.controller;
 
+import com.nexfly.api.system.bean.AppEditResponse;
+import com.nexfly.api.system.bean.AppSaveRequest;
 import com.nexfly.common.auth.utils.AuthUtils;
 import com.nexfly.common.core.constants.NexflyConstants;
+import com.nexfly.common.core.exception.NexflyException;
 import com.nexfly.common.core.rest.RestResult;
 import com.nexfly.common.core.rest.RestResultUtils;
 import com.nexfly.system.model.App;
@@ -33,8 +36,13 @@ public class AppController {
     }
 
     @GetMapping("get")
-    public RestResult<App> get(@RequestParam("appId") Long appId) {
+    public RestResult<AppEditResponse> get(@RequestParam("appId") Long appId) {
         return RestResultUtils.success(appService.findById(appId));
+    }
+
+    @PostMapping("save")
+    public RestResult<Boolean> save(@RequestBody AppSaveRequest appParam) throws NexflyException {
+        return RestResultUtils.success(appService.save(appParam));
     }
 
     @PostMapping("conversation/set")

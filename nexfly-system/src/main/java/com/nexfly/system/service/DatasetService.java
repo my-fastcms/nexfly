@@ -2,6 +2,7 @@ package com.nexfly.system.service;
 
 import com.nexfly.system.model.Dataset;
 
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -10,11 +11,17 @@ import java.util.List;
  **/
 public interface DatasetService {
 
+    Dataset getById(Long datasetId);
+
     void save(Dataset dataset);
 
     List<DatasetResponse> list(Long userId);
 
-    record DatasetResponse(Long datasetId, String name, String description, Long docNum, Long chunkNum) {
+    record DatasetResponse(Long datasetId, String name, String description, Long docNum, Long chunkNum, Date createDate, Date updateDate) {
+
+    }
+
+    record AppDataset(Long appId, Long datasetId) {
 
     }
 

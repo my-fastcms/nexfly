@@ -1,8 +1,6 @@
 provider: tongyi
 label: Tongyi-Qianwen
-iconSmall: icon_s.png
-iconLarge: icon_l.png
-background: "#EFF1FE"
+status: 1
 help:
   title: 从阿里云获取 API Key
   url: https://dashscope.console.aliyun.com/api-key_management
@@ -12,10 +10,4 @@ supportedModelTypes:
   - text-embedding
 configurateMethods:
   - predefined-model
-modelCredentials:
-  - variable: dashscope_api_key
-    label: API Key
-    type: secret-input
-    required: true
-    placeholder: 在此输入您的 API Key
 

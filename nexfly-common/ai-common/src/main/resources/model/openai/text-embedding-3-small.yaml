@@ -1,6 +1,6 @@
 provider: openai
 model: text-embedding-3-small
-modelType: text-embedding
+modelType: embedding
 modelProperties:
   contextSize: 8191
   maxChunks: 32

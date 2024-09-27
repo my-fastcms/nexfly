@@ -1,17 +1,19 @@
 package com.nexfly.system.controller;
 
+import com.github.pagehelper.PageHelper;
+import com.github.pagehelper.PageInfo;
 import com.nexfly.ai.common.vectorstore.VectorStoreFactory;
+import com.nexfly.common.auth.utils.AuthUtils;
 import com.nexfly.common.core.constants.NexflyConstants;
 import com.nexfly.common.core.exception.NexflyException;
 import com.nexfly.common.core.rest.RestResultUtils;
 import com.nexfly.system.manager.ModelManager;
+import com.nexfly.system.mapper.AccountMapper;
 import com.nexfly.system.mapper.DatasetMapper;
 import com.nexfly.system.mapper.DocumentMapper;
 import com.nexfly.system.mapper.DocumentSegmentMapper;
-import com.nexfly.system.mapper.ProviderModelMapper;
 import com.nexfly.system.model.Dataset;
 import com.nexfly.system.model.DocumentSegment;
-import com.nexfly.system.model.ProviderModel;
 import com.nexfly.system.service.DocumentService;
 import org.springframework.ai.document.Document;
 import org.springframework.ai.embedding.EmbeddingModel;
@@ -40,7 +42,7 @@ public class DocumentController {
     private DocumentService documentService;
 
     @Autowired
-    private DocumentMapper docmentMapper;
+    private DocumentMapper documentMapper;
 
     @Autowired
     private DatasetMapper datasetMapper;
@@ -49,11 +51,11 @@ public class DocumentController {
     private DocumentSegmentMapper documentSegmentMapper;
 
     @Autowired
-    private ProviderModelMapper providerModelMapper;
+    private AccountMapper accountMapper;
 
     @PostMapping("upload")
     @ExceptionHandler(value = MultipartException.class)
-    public Object upload(@RequestParam("orgId") Long orgId, @RequestParam("datasetId") Long datasetId, @RequestParam("file") MultipartFile file) throws Exception {
+    public Object upload(@RequestParam("datasetId") Long datasetId, @RequestParam("file") MultipartFile file) throws Exception {
 
         if(file == null) {
             return RestResultUtils.failed("请选择上传文件");
@@ -65,6 +67,8 @@ public class DocumentController {
             return RestResultUtils.failed("dataset不存在");
         }
 
+        Long orgId = accountMapper.getUserOrg(AuthUtils.getUserId()).getOrgId();
+
         List<Document> documents = new TikaDocumentReader(new InputStreamResource(file.getInputStream())).get();
 
         com.nexfly.system.model.Document doc = new com.nexfly.system.model.Document();
@@ -72,7 +76,7 @@ public class DocumentController {
         doc.setOrgId(orgId);
         doc.setDatasetId(dataset.getDatasetId());
         doc.setDataSource(1);
-        docmentMapper.save(doc);
+        documentMapper.save(doc);
 
         var tokenTextSplitter = new TokenTextSplitter(400, 5, 200, 10000, true);
         List<Document> splitDocuments = tokenTextSplitter.apply(documents);
@@ -87,8 +91,7 @@ public class DocumentController {
             documentSegmentMapper.save(documentSegment);
         }
 
-        ProviderModel providerModel = providerModelMapper.findById(dataset.getEmbedModelId());
-        EmbeddingModel embeddingModel = modelManager.getEmbeddingModel(orgId, providerModel.getModelName());
+        EmbeddingModel embeddingModel = modelManager.getEmbeddingModel(dataset.getEmbedModelId());
         VectorStore vectorStore = vectorStoreFactory.getVectorStore(dataset.getVsIndexNodeId(), embeddingModel);
         vectorStore.add(splitDocuments);
 
@@ -99,6 +102,12 @@ public class DocumentController {
     public Object save(@RequestBody DocumentService.DocumentParam documentParam) throws NexflyException {
         documentService.saveDocument(documentParam);
         return RestResultUtils.success();
+    }
+
+    @GetMapping("list")
+    public Object list(@RequestParam("datasetId") Long datasetId, @RequestParam("page") Integer page, @RequestParam("pageSize") Integer pageSize) {
+        PageInfo<Object> documentPage = PageHelper.startPage(page, pageSize).doSelectPageInfo(() -> documentService.list(datasetId));
+        return RestResultUtils.success(documentPage);
     }
 
 }

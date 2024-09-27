@@ -1,5 +1,8 @@
 package com.nexfly.system.service;
 
+import com.nexfly.api.system.bean.AppEditResponse;
+import com.nexfly.api.system.bean.AppSaveRequest;
+import com.nexfly.common.core.exception.NexflyException;
 import com.nexfly.system.model.App;
 import com.nexfly.system.model.AppConversation;
 import reactor.core.publisher.Flux;
@@ -13,9 +16,13 @@ import java.util.List;
  **/
 public interface AppService {
 
-    App findById(Long appId);
+    Boolean save(AppSaveRequest appParam) throws NexflyException;
+
+    AppEditResponse findById(Long appId);
 
     List<App> list(Long userId);
+
+    void saveOrUpdate(App app);
 
     Flux<AppService.ChatResponse> chat(NexflyMessage message) throws Exception;
 

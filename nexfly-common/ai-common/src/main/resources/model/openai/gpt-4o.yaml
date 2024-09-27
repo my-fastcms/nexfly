@@ -1,7 +1,7 @@
 provider: openai
 model: gpt-4o
 label: gpt-4o
-modelType: llm
+modelType: chat
 features:
   - multi-tool-call
   - agent-thought

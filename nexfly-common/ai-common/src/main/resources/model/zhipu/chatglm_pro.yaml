@@ -1,7 +1,7 @@
 provider: zhipu
 model: chatglm_pro
 label: chatglm_pro
-modelType: llm
+modelType: chat
 modelProperties:
   mode: chat
 modelParameters:

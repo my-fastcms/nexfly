@@ -8,7 +8,7 @@ import java.util.Date;
 public class Account extends BaseModel implements Serializable {
     private Long accountId;
 
-    private String name;
+    private String nickname;
 
     private String email;
 
@@ -40,12 +40,12 @@ public class Account extends BaseModel implements Serializable {
         this.accountId = accountId;
     }
 
-    public String getName() {
-        return name;
+    public String getNickname() {
+        return nickname;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setNickname(String nickname) {
+        this.nickname = nickname;
     }
 
     public String getEmail() {
@@ -135,7 +135,7 @@ public class Account extends BaseModel implements Serializable {
         sb.append(" [");
         sb.append("Hash = ").append(hashCode());
         sb.append(", accountId=").append(accountId);
-        sb.append(", name=").append(name);
+        sb.append(", nickname=").append(nickname);
         sb.append(", email=").append(email);
         sb.append(", password=").append(password);
         sb.append(", passwordSalt=").append(passwordSalt);

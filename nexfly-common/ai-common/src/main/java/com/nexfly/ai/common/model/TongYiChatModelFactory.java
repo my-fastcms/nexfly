@@ -9,15 +9,17 @@ import org.springframework.stereotype.Service;
 /**
  * 通义千问
  */
-@Service("tongyi-llm")
+@Service("tongyi-chat")
 public class TongYiChatModelFactory extends AbstractModelFactory {
 
     @Override
     Object doCreate(CreateModel createModel, JSONObject jsonObject) {
         TongYiChatOptions.Builder builder = TongYiChatOptions.builder().withModel(getModelName()).withTemperature(0.7);
 
-        if (jsonObject.get("temperature") != null) {
-            builder.withTemperature(jsonObject.getDouble("temperature"));
+        if (jsonObject != null) {
+            if (jsonObject.get("temperature") != null) {
+                builder.withTemperature(jsonObject.getDouble("temperature"));
+            }
         }
 
         return new TongYiChatModel(new TongYiAiApi(getApiKey()), builder.build());

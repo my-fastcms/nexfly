@@ -1,6 +1,6 @@
 provider: zhipu
 model: embedding-2
-modelType: text-embedding
+modelType: embedding
 modelProperties:
   contextSize: 8192
 pricing:

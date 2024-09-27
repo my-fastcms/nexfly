@@ -1,0 +1,6 @@
+# Auto Configure
+org.springframework.context.ApplicationContextInitializer=\
+  com.nexfly.common.core.utils.ApplicationUtils
+
+org.springframework.boot.SpringApplicationRunListener=\
+  com.nexfly.common.core.listener.NexflyApplicationRunListener

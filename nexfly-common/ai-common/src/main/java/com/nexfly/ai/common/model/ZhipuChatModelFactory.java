@@ -9,7 +9,7 @@ import org.springframework.stereotype.Service;
 /**
  * 智谱
  */
-@Service("zhipu-llm")
+@Service("zhipu-chat")
 public class ZhipuChatModelFactory extends AbstractModelFactory {
 
     @Override

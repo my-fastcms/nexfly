@@ -15,8 +15,6 @@ public class ProviderModel extends BaseModel implements Serializable {
 
     private String modelType;
 
-    private String modelConfig;
-
     public Long getModelId() {
         return modelId;
     }
@@ -57,14 +55,6 @@ public class ProviderModel extends BaseModel implements Serializable {
         this.modelType = modelType;
     }
 
-    public String getModelConfig() {
-        return modelConfig;
-    }
-
-    public void setModelConfig(String modelConfig) {
-        this.modelConfig = modelConfig;
-    }
-
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
@@ -76,7 +66,6 @@ public class ProviderModel extends BaseModel implements Serializable {
         sb.append(", providerName=").append(providerName);
         sb.append(", modelName=").append(modelName);
         sb.append(", modelType=").append(modelType);
-        sb.append(", modelClass=").append(modelConfig);
         sb.append("]");
         return sb.toString();
     }

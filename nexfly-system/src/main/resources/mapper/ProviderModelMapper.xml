@@ -7,15 +7,14 @@
     <result column="provider_name" property="providerName" />
     <result column="model_name" property="modelName" />
     <result column="model_type" property="modelType" />
-    <result column="model_config" property="modelConfig" />
     <result column="create_at" property="createAt" />
     <result column="update_at" property="updateAt" />
   </resultMap>
   <sql id="Vo_Column_List">
-    `model_id`,`org_id`,`provider_name`,`model_name`,`model_type`,`model_config`,`create_at`,`update_at`
+    `model_id`,`org_id`,`provider_name`,`model_name`,`model_type`,`create_at`,`update_at`
   </sql>
-  <insert id="save">
-    insert into provider_model (`model_id`,`org_id`,`provider_name`,`model_name`,`model_type`, `model_config`) values (#{providerModel.modelId},#{providerModel.orgId},#{providerModel.providerName},#{providerModel.modelName},#{providerModel.modelType},#{providerModel.modelConfig})
+  <insert id="save" useGeneratedKeys="true" keyProperty="modelId" keyColumn="model_id" parameterType="com.nexfly.system.model.ProviderModel">
+    insert into provider_model (`org_id`,`provider_name`,`model_name`,`model_type`,`create_by`,`update_by`) values (#{providerModel.orgId},#{providerModel.providerName},#{providerModel.modelName},#{providerModel.modelType},#{providerModel.createBy},#{providerModel.updateBy})
   </insert>
   <update id="update">
     update provider_model
@@ -31,9 +30,6 @@
       </if>
       <if test="providerModel.modelType != null">
         model_type = #{providerModel.modelType,jdbcType=VARCHAR},
-      </if>
-      <if test="providerModel.modelConfig != null">
-        model_config = #{providerModel.modelConfig,jdbcType=VARCHAR},
       </if>
       <if test="providerModel.createAt != null">
         create_at = #{providerModel.createAt,jdbcType=TIMESTAMP},
@@ -51,10 +47,15 @@
     <select id="getListByOrgId" resultMap="BaseResultMap">
       select <include refid="Vo_Column_List"/> from provider_model where org_id = #{orgId}
     </select>
-  <select id="list" resultMap="BaseResultMap">
-    select <include refid="Vo_Column_List"/> from provider_model
-  </select>
   <select id="getProviderModelByOrgAndName" resultMap="BaseResultMap">
-    select <include refid="Vo_Column_List"/> from provider_model where org_id = #{orgId} and model_name = #{modelName}
+    select <include refid="Vo_Column_List"/> from provider_model where org_id = #{orgId} and provider_name = #{providerName} and model_name = #{modelName}
   </select>
+
+  <insert id="insertBatch">
+    insert into provider_model (`org_id`,`provider_name`,`model_name`,`model_type`) values
+    <foreach collection="providerModelList" item="model" separator=",">
+      (#{model.orgId},#{model.providerName},#{model.modelName},#{model.modelType})
+    </foreach>
+  </insert>
+
 </mapper>

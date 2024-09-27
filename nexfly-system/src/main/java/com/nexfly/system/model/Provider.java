@@ -1,6 +1,7 @@
 package com.nexfly.system.model;
 
 import com.nexfly.common.model.BaseModel;
+
 import java.io.Serializable;
 
 public class Provider extends BaseModel implements Serializable {
@@ -12,7 +13,9 @@ public class Provider extends BaseModel implements Serializable {
 
     private String providerName;
 
-    private String config;
+    private String apiUrl;
+
+    private String apiKey;
 
     private static final long serialVersionUID = 1L;
 
@@ -48,12 +51,20 @@ public class Provider extends BaseModel implements Serializable {
         this.providerName = providerName;
     }
 
-    public String getConfig() {
-        return config;
+    public String getApiUrl() {
+        return apiUrl;
     }
 
-    public void setConfig(String config) {
-        this.config = config;
+    public void setApiUrl(String apiUrl) {
+        this.apiUrl = apiUrl;
+    }
+
+    public String getApiKey() {
+        return apiKey;
+    }
+
+    public void setApiKey(String apiKey) {
+        this.apiKey = apiKey;
     }
 
     @Override
@@ -65,7 +76,8 @@ public class Provider extends BaseModel implements Serializable {
         sb.append(", providerId=").append(providerId);
         sb.append(", orgId=").append(orgId);
         sb.append(", providerName=").append(providerName);
-        sb.append(", config=").append(config);
+        sb.append(", apiKey=").append(apiKey);
+        sb.append(", apiUrl=").append(apiUrl);
         sb.append(", serialVersionUID=").append(serialVersionUID);
         sb.append("]");
         return sb.toString();

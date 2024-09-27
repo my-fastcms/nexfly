@@ -14,6 +14,6 @@ public interface ProviderMapper {
 
     List<Provider> getListByOrgId(@Param("orgId") Long orgId);
 
-    List<Provider> list();
+    Provider getUserProviderByName(@Param("orgId") Long orgId, @Param("providerName") String providerName);
 
 }

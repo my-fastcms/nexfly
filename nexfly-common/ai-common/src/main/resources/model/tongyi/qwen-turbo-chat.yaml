@@ -1,7 +1,7 @@
 provider: tongyi
 model: qwen-turbo-chat
 label: qwen-turbo-chat
-modelType: llm
+modelType: chat
 features:
   - multi-tool-call
   - agent-thought

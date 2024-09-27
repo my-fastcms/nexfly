@@ -3,7 +3,7 @@
 <mapper namespace="com.nexfly.system.mapper.AccountMapper">
   <resultMap id="BaseResultMap" type="com.nexfly.system.model.Account">
     <id column="account_id" property="accountId" />
-    <result column="name" property="name" />
+    <result column="nickname" property="nickname" />
     <result column="email" property="email" />
     <result column="password" property="password" />
     <result column="password_salt" property="passwordSalt" />
@@ -28,16 +28,16 @@
   </resultMap>-->
 
   <sql id="Vo_Column_List">
-    `account_id`,`name`,`email`,`password`,`password_salt`,`avatar`,`language`,`theme`,`timezone`,`last_login_time`,`last_login_ip`,`status`,`create_at`,`update_at`
+    `account_id`,`nickname`,`email`,`password`,`password_salt`,`avatar`,`language`,`theme`,`timezone`,`last_login_time`,`last_login_ip`,`status`,`create_at`,`update_at`
   </sql>
   <insert id="save">
-    insert into account (`account_id`,`name`,`email`,`password`,`password_salt`,`avatar`,`language`,`theme`,`timezone`,`last_login_time`,`last_login_ip`,`status`) values (#{account.accountId},#{account.name},#{account.email},#{account.password},#{account.passwordSalt},#{account.avatar},#{account.language},#{account.theme},#{account.timezone},#{account.lastLoginTime},#{account.lastLoginIp},#{account.status})
+    insert into account (`account_id`,`nickname`,`email`,`password`,`password_salt`,`avatar`,`language`,`theme`,`timezone`,`last_login_time`,`last_login_ip`,`status`) values (#{account.accountId},#{account.nickname},#{account.email},#{account.password},#{account.passwordSalt},#{account.avatar},#{account.language},#{account.theme},#{account.timezone},#{account.lastLoginTime},#{account.lastLoginIp},#{account.status})
   </insert>
   <update id="update">
     update account
     <set>
-      <if test="account.name != null">
-        name = #{account.name,jdbcType=VARCHAR},
+      <if test="account.nickname != null">
+        nickname = #{account.nickname,jdbcType=VARCHAR},
       </if>
       <if test="account.email != null">
         email = #{account.email,jdbcType=VARCHAR},

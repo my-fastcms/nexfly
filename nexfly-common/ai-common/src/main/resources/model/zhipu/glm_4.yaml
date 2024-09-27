@@ -1,7 +1,7 @@
 provider: zhipu
 model: glm-4
 label: glm-4
-modelType: llm
+modelType: chat
 features:
   - multi-tool-call
   - agent-thought

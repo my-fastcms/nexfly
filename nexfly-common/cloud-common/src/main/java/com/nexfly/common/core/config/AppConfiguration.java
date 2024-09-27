@@ -34,7 +34,7 @@ public class AppConfiguration implements WebMvcConfigurer {
     @Bean
     public CookieLocaleResolver localeResolver() {
         CookieLocaleResolver cookieLocaleResolver = new CookieLocaleResolver();
-        cookieLocaleResolver.setCookieName("ai.lang.LOCALE");
+        cookieLocaleResolver.setCookieName("nexfly.lang.LOCALE");
         return cookieLocaleResolver;
     }
 

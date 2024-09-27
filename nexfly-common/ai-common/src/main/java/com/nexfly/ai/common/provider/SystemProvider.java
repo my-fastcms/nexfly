@@ -11,13 +11,10 @@ public class SystemProvider {
     String provider;
     String label;
     String description;
-    String iconSmall;
-    String iconLarge;
-    String background;
+    String status;
     Help help;
     List<String> supportedModelTypes;
     List<String> configurateMethods;
-    List<ModelCredential> modelCredentials;
 
     /**
      * 模型提供商对应的模型列表
@@ -48,28 +45,12 @@ public class SystemProvider {
         this.description = description;
     }
 
-    public String getIconSmall() {
-        return iconSmall;
+    public String getStatus() {
+        return status;
     }
 
-    public void setIconSmall(String iconSmall) {
-        this.iconSmall = iconSmall;
-    }
-
-    public String getIconLarge() {
-        return iconLarge;
-    }
-
-    public void setIconLarge(String iconLarge) {
-        this.iconLarge = iconLarge;
-    }
-
-    public String getBackground() {
-        return background;
-    }
-
-    public void setBackground(String background) {
-        this.background = background;
+    public void setStatus(String status) {
+        this.status = status;
     }
 
     public Help getHelp() {
@@ -94,14 +75,6 @@ public class SystemProvider {
 
     public void setConfigurateMethods(List<String> configurateMethods) {
         this.configurateMethods = configurateMethods;
-    }
-
-    public List<ModelCredential> getModelCredentials() {
-        return modelCredentials;
-    }
-
-    public void setModelCredentials(List<ModelCredential> modelCredentials) {
-        this.modelCredentials = modelCredentials;
     }
 
     public List<SystemProviderModel> getProviderModelList() {

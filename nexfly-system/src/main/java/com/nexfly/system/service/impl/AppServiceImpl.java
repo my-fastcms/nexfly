@@ -1,15 +1,23 @@
 package com.nexfly.system.service.impl;
 
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.nexfly.ai.common.function.FunctionManager;
-import com.nexfly.ai.common.vectorstore.VectorStoreFactory;
+import com.nexfly.ai.common.vectorstore.VectorStoreManager;
+import com.nexfly.api.system.bean.AppEditResponse;
+import com.nexfly.api.system.bean.AppModelInfo;
+import com.nexfly.api.system.bean.AppSaveRequest;
 import com.nexfly.common.auth.utils.AuthUtils;
+import com.nexfly.common.core.exception.NexflyException;
+import com.nexfly.system.manager.DefaultModelManager;
 import com.nexfly.system.manager.ModelManager;
 import com.nexfly.system.mapper.*;
 import com.nexfly.system.memory.NexflyChatMemory;
 import com.nexfly.system.model.*;
 import com.nexfly.system.service.AppService;
+import com.nexfly.system.service.DatasetService;
+import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.client.advisor.AbstractChatMemoryAdvisor;
@@ -24,10 +32,13 @@ import org.springframework.ai.embedding.EmbeddingModel;
 import org.springframework.ai.vectorstore.SearchRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import reactor.core.publisher.Flux;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static com.nexfly.common.core.constants.NexflyConstants.USER_ID;
 
@@ -48,16 +59,13 @@ public class AppServiceImpl implements AppService {
     private AppModelMapper appModelMapper;
 
     @Autowired
-    private ProviderModelMapper providerModelMapper;
-
-    @Autowired
     private AppConfigMapper appConfigMapper;
 
     @Autowired
     private DatasetMapper datasetMapper;
 
     @Autowired
-    private VectorStoreFactory vectorStoreFactory;
+    private VectorStoreManager vectorStoreManager;
 
     @Autowired
     private FunctionManager functionManager;
@@ -68,14 +76,162 @@ public class AppServiceImpl implements AppService {
     @Autowired
     private AppMessageMapper appMessageMapper;
 
+    @Autowired
+    private AccountMapper accountMapper;
+
+    @Autowired
+    private ProviderModelMapper providerModelMapper;
+
     @Override
-    public App findById(Long appId) {
-        return appMapper.findById(appId);
+    @Transactional(rollbackFor = Exception.class)
+    public Boolean save(AppSaveRequest appParam) throws NexflyException {
+        Long orgId = accountMapper.getUserOrg(AuthUtils.getUserId()).getOrgId();
+        App app = appMapper.findById(appParam.getAppId());
+        if (app == null) {
+            app = new App();
+        }
+        app.setName(appParam.getName());
+        app.setDescription(appParam.getDescription());
+        app.setIcon(appParam.getIcon());
+        app.setOrgId(orgId);
+        saveOrUpdate(app);
+
+        // 设置app配置
+        AppSaveRequest.PromptConfig promptConfig = appParam.getPromptConfig();
+        AppConfig appConfig = appConfigMapper.findByAppId(app.getAppId());
+        if (appConfig == null) {
+            appConfig = new AppConfig();
+            appConfig.setAppId(app.getAppId());
+            appConfig.setOrgId(orgId);
+        }
+        appConfig.setPrePrompt(promptConfig.getSystem());
+        if (!promptConfig.getParameters().isEmpty()) {
+            appConfig.setFormVariable(JSONArray.toJSONString(promptConfig.getParameters()));
+        }
+        appConfig.setEmptyResponse(promptConfig.getEmptyResponse());
+        appConfig.setPrologue(promptConfig.getPrologue());
+        appConfig.setQuote(promptConfig.getQuote());
+
+        saveOrUpdateAppConfig(appConfig);
+
+        // 设置大模型model 以及 model 配置
+        List<AppModelInfo> appModelList = appModelMapper.findListByAppId(app.getAppId());
+        if (StringUtils.isNotBlank(appParam.getModelId())) {
+            saveOrUpdateAppModel(app, getSelectModel(appParam.getModelId()), appModelList, appParam, DefaultModelManager.ModelType.CHAT);
+        }
+        if (StringUtils.isNotBlank(appParam.getRerankModelId())) {
+            saveOrUpdateAppModel(app, getSelectModel(appParam.getRerankModelId()), appModelList, appParam, DefaultModelManager.ModelType.RERANK);
+        }
+        if (StringUtils.isNotBlank(appParam.getTtsModelId())) {
+            saveOrUpdateAppModel(app, getSelectModel(appParam.getTtsModelId()), appModelList, appParam, DefaultModelManager.ModelType.TTS);
+        }
+
+        // 设置知识库配置
+        if (!appParam.getDatasetIds().isEmpty()) {
+            datasetMapper.deleteAppDataset(appParam.getAppId());
+            datasetMapper.insertAppDatasetList(appParam.getDatasetIds().stream().map(item -> new DatasetService.AppDataset(appParam.getAppId(), item)).toList());
+        }
+
+        return true;
+    }
+
+    private void saveOrUpdateAppConfig(AppConfig appConfig) {
+        if (appConfig.getConfigId() == null) {
+            appConfigMapper.save(appConfig);
+        } else {
+            appConfigMapper.update(appConfig);
+        }
+    }
+
+    private SelectModel getSelectModel(String selectModelId) {
+        String[] modelInfoArray = selectModelId.split("@");
+        String provider = modelInfoArray[0];
+        String modelName = modelInfoArray[1];
+        String modelType = modelInfoArray[2];
+        return new SelectModel(provider, modelName, modelType);
+    }
+
+    record SelectModel(String provider, String modelName, String type) {
+
+    }
+
+    void saveOrUpdateAppModel(App app, SelectModel selectModel, List<AppModelInfo> appModelList, AppSaveRequest appParam, DefaultModelManager.ModelType modelType) {
+
+        AppModelInfo appModelInfo = appModelList.stream().filter(m -> m.getModelType().equals(modelType.getValue())).findFirst().orElse(null);
+
+        AppModel appModel;
+        if (appModelInfo == null) {
+            appModel = new AppModel();
+            appModel.setAppId(app.getAppId());
+        } else {
+            if (appModelInfo.getProviderName().equals(selectModel.provider)
+                    && appModelInfo.getModelName().equals(selectModel.modelName)
+                    && appModelInfo.getModelType().equals(selectModel.type)) {
+                return;
+            }
+            appModel = appModelMapper.findById(appModelInfo.getAppModelId());
+        }
+        ProviderModel providerModel = providerModelMapper.getProviderModelByOrgAndName(app.getOrgId(), selectModel.provider, selectModel.modelName);
+        if (providerModel == null) {
+            providerModel = new ProviderModel();
+            providerModel.setOrgId(app.getOrgId());
+            providerModel.setProviderName(selectModel.provider);
+            providerModel.setModelName(selectModel.modelName);
+            providerModel.setModelType(selectModel.type);
+            providerModelMapper.save(providerModel);
+        }
+        appModel.setModelId(providerModel.getModelId());
+        appModel.setModelConfig(JSON.toJSONString(appParam.getModelConfig()));
+        if (appModel.getAppModelId() == null) {
+            appModelMapper.save(appModel);
+        } else {
+            appModelMapper.update(appModel);
+        }
+    }
+
+    @Override
+    public AppEditResponse findById(Long appId) {
+        App app = appMapper.findById(appId);
+        AppEditResponse appEditResponse = new AppEditResponse();
+        appEditResponse.setAppId(app.getAppId());
+        appEditResponse.setOrgId(app.getOrgId());
+        appEditResponse.setName(app.getName());
+        appEditResponse.setDescription(app.getDescription());
+        appEditResponse.setIcon(app.getIcon());
+        AppConfig appConfig = appConfigMapper.findByAppId(app.getAppId());
+        AppSaveRequest.PromptConfig promptConfig = new AppSaveRequest.PromptConfig();
+        promptConfig.setSystem(appConfig.getPrePrompt());
+        List<AppSaveRequest.Parameter> parameters = JSONArray.parseArray(appConfig.getFormVariable(), AppSaveRequest.Parameter.class);
+        promptConfig.setParameters(parameters);
+        promptConfig.setEmptyResponse(appConfig.getEmptyResponse());
+        promptConfig.setPrologue(appConfig.getPrologue());
+        promptConfig.setQuote(appConfig.getQuote());
+        appEditResponse.setPromptConfig(promptConfig);
+        List<AppModelInfo> appModelList = appModelMapper.findListByAppId(app.getAppId());
+        AppModelInfo appModelInfo = appModelList.stream().filter(m -> m.getModelType().equals(DefaultModelManager.ModelType.CHAT.getValue())).findFirst().orElse(null);
+        if (appModelInfo != null) {
+            AppSaveRequest.ModelConfig modelConfig = JSON.parseObject(appModelInfo.getModelConfig(), AppSaveRequest.ModelConfig.class);
+            appEditResponse.setModelConfig(modelConfig);
+            appEditResponse.setModelId(appModelInfo.getProviderName().concat("@").concat(appModelInfo.getModelName()).concat("@").concat(appModelInfo.getModelType()));
+        }
+        List<Dataset> datasetList = datasetMapper.findDatasetListByAppId(app.getAppId());
+        appEditResponse.setDatasetIds(datasetList.stream().map(Dataset::getDatasetId).toList());
+        appEditResponse.setDatasetNames(datasetList.stream().map(Dataset::getName).toList());
+        return appEditResponse;
     }
 
     @Override
     public List<App> list(Long userId) {
         return appMapper.list(userId);
+    }
+
+    @Override
+    public void saveOrUpdate(App app) {
+        if (app.getAppId() == null) {
+            appMapper.save(app);
+        } else {
+            appMapper.update(app);
+        }
     }
 
     @Override
@@ -86,10 +242,7 @@ public class AppServiceImpl implements AppService {
         App app = appMapper.findById(appConversation.getAppId());
 
         // 查询app关联的大语言模型
-        AppModel appModel = appModelMapper.findByAppId(app.getAppId());
-        ProviderModel appProviderModel = providerModelMapper.findById(appModel.getModelId());
-        String modelName = appProviderModel.getModelName();
-        ChatModel chatModel = modelManager.getChatModel(app.getOrgId(), modelName);
+        ChatModel chatModel = modelManager.getChatModel(app.getAppId());
 
         // 查找 app配置信息
         AppConfig appConfig = appConfigMapper.findByAppId(app.getAppId());
@@ -102,21 +255,20 @@ public class AppServiceImpl implements AppService {
         List<Advisor> requestResponseAdvisorList = new ArrayList<>();
         requestResponseAdvisorList.add(new PromptChatMemoryAdvisor(new NexflyChatMemory(AuthUtils.getUserId(), app.getAppId(), appMessageMapper)));
         for (Dataset dataset : datasetList) {
-            ProviderModel providerModel = providerModelMapper.findById(dataset.getEmbedModelId());
-            EmbeddingModel embeddingModel = modelManager.getEmbeddingModel(app.getOrgId(), providerModel.getModelName());
-            var qaAdvisor = new QuestionAnswerAdvisor(vectorStoreFactory.getVectorStore(dataset.getVsIndexNodeId(), embeddingModel),
+            EmbeddingModel embeddingModel = modelManager.getEmbeddingModel(dataset.getEmbedModelId());
+            var qaAdvisor = new QuestionAnswerAdvisor(vectorStoreManager.getVectorStoreFactory().getVectorStore(dataset.getVsIndexNodeId(), embeddingModel),
                     SearchRequest.defaults().withSimilarityThreshold(0.65).withTopK(6), system);
             requestResponseAdvisorList.add(qaAdvisor);
         }
 
         // 变量
-        JSONObject formVariable = JSON.parseObject(appConfig.getFormVariable());
+        Map<String, Object> formVariable = getFormVariable(appConfig.getFormVariable());
         SystemPromptTemplate systemPromptTemplate = new SystemPromptTemplate(system);
-        Message systemMessage = formVariable == null ? systemPromptTemplate.createMessage() : systemPromptTemplate.createMessage(formVariable);
+        Message systemMessage = formVariable.isEmpty() ? systemPromptTemplate.createMessage() : systemPromptTemplate.createMessage(formVariable);
 
         List<Message> messageList = new ArrayList<>();
         message.messages().forEach(m -> {
-            if (m.content() != null) {
+            if (StringUtils.isNotBlank(m.content())) {
                 UserMessage userMessage = new UserMessage(m.content());
                 messageList.add(userMessage);
             }
@@ -150,6 +302,18 @@ public class AppServiceImpl implements AppService {
                 ;
     }
 
+    Map<String, Object> getFormVariable(String formVariable) {
+        JSONArray formVariableArray = JSON.parseArray(formVariable);
+        Map<String, Object> map = new HashMap<>();
+        for (int i = 0; i < formVariableArray.size(); i++) {
+            JSONObject jsonObject = formVariableArray.getJSONObject(i);
+            for (String key : jsonObject.keySet()) {
+                map.put(key, jsonObject.get(key));
+            }
+        }
+        return map;
+    }
+
     @Override
     public List<AppConversation> getAppConversationList(Long appId) {
         return appConversationMapper.findListByAppId(appId);
@@ -160,10 +324,8 @@ public class AppServiceImpl implements AppService {
         AppConversation appConversation = appConversationMapper.findById(appConversationId);
         List<AppMessage> conversationLastNMessageList = appMessageMapper.getConversationLastNMessageList(appConversationId, 100);
 
-        List<ConversationMessage> conversationMessageList = new ArrayList<>();
-        for (AppMessage appMessage : conversationLastNMessageList) {
-            conversationMessageList.add(new ConversationMessage(appMessage.getContent(), appMessage.getRole(), String.valueOf(appMessage.getMessageId())));
-        }
+        List<ConversationMessage> conversationMessageList = conversationLastNMessageList.stream().map(appMessage ->
+                new ConversationMessage(appMessage.getContent(), appMessage.getRole(), String.valueOf(appMessage.getMessageId()))).toList();
 
         return new Conversation(appConversation.getAppId(), appConversation.getConversationId(), conversationMessageList);
     }

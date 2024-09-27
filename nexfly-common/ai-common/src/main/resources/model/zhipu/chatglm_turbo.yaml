@@ -1,7 +1,7 @@
 provider: zhipu
 model: chatglm_turbo
 label: chatglm_turbo
-modelType: llm
+modelType: chat
 modelProperties:
   mode: chat
 modelParameters:

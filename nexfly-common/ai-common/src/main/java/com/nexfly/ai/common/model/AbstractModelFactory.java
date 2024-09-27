@@ -14,8 +14,8 @@ public abstract class AbstractModelFactory implements ModelFactory {
     @Override
     public Object getInstance(CreateModel createModel) throws Exception {
         com.alibaba.fastjson.JSONObject jsonObject = JSON.parseObject(createModel.getConfig());
-        this.apiKey = jsonObject.getString("api_key");
-        this.apiUrl = jsonObject.getString("api_url");
+        this.apiKey = createModel.getApiKey();
+        this.apiUrl = createModel.getApiUrl();
         this.modelName = createModel.getModelName();
         return doCreate(createModel, jsonObject);
     }

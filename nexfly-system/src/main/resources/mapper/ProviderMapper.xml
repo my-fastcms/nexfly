@@ -6,14 +6,16 @@
     <result column="org_id" property="orgId" />
     <result column="label" property="label" />
     <result column="provider_name" property="providerName" />
+    <result column="api_key" property="apiKey" />
+    <result column="api_url" property="apiUrl" />
     <result column="create_at" property="createAt" />
     <result column="update_at" property="updateAt" />
   </resultMap>
   <sql id="Vo_Column_List">
-    `provider_id`,`org_id`,`label`,`provider_name`,`create_at`,`update_at`,`config`
+    `provider_id`,`org_id`,`label`,`provider_name`,`create_at`,`update_at`,`api_key`,`api_url`
   </sql>
   <insert id="save">
-    insert into provider (`provider_id`,`org_id`,`label`,`provider_name`,`config`) values (#{provider.providerId},#{provider.orgId},#{provider.label},#{provider.providerName},#{provider.config})
+    insert into provider (`provider_id`,`org_id`,`label`,`provider_name`,`api_key`,`api_url`) values (#{provider.providerId},#{provider.orgId},#{provider.label},#{provider.providerName},#{provider.apiKey},#{provider.apiUrl})
   </insert>
   <update id="update">
     update provider
@@ -22,7 +24,13 @@
         org_id = #{provider.orgId,jdbcType=BIGINT},
       </if>
       <if test="provider.label != null">
-        label = #{label},
+        label = #{provider.label},
+      </if>
+      <if test="provider.apiKey != null">
+        api_key = #{provider.apiKey},
+      </if>
+      <if test="provider.apiUrl != null">
+        api_url = #{provider.apiUrl},
       </if>
       <if test="provider.providerName != null">
         provider_name = #{provider.providerName,jdbcType=VARCHAR},
@@ -43,7 +51,7 @@
     <select id="getListByOrgId" resultMap="BaseResultMap">
       select <include refid="Vo_Column_List"/> from provider where org_id = #{orgId}
     </select>
-    <select id="list" resultMap="BaseResultMap">
-      select <include refid="Vo_Column_List"/> from provider
+    <select id="getUserProviderByName" resultMap="BaseResultMap">
+      select <include refid="Vo_Column_List"/> from provider where org_id = #{orgId} and provider_name = #{providerName}
     </select>
 </mapper>

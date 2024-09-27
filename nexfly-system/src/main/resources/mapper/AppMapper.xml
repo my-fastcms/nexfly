@@ -18,8 +18,8 @@
   <sql id="Vo_Column_List">
     `app_id`,`org_id`,`name`,`description`,`app_type`,`status`,`icon`,`flow_id`,`create_at`,`update_at`,`create_by`,`update_by`
   </sql>
-  <insert id="save">
-    insert into app (`app_id`,`org_id`,`name`,`description`,`app_type`,`status`,`icon`,`flow_id`,`create_by`,`update_by`) values (#{app.appId},#{app.orgId},#{app.name},#{app.description},#{app.appType},#{app.status},#{app.icon},#{app.flowId},#{app.createBy},#{app.updateBy})
+  <insert id="save" useGeneratedKeys="true" keyProperty="appId" keyColumn="app_id" parameterType="com.nexfly.system.model.App">
+    insert into app (`org_id`,`name`,`description`,`app_type`,`status`,`icon`,`flow_id`,`create_by`,`update_by`) values (#{app.orgId},#{app.name},#{app.description},#{app.appType},#{app.status},#{app.icon},#{app.flowId},#{app.createBy},#{app.updateBy})
   </insert>
   <update id="update">
     update app

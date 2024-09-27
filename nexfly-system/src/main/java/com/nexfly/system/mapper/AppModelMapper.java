@@ -1,11 +1,14 @@
 package com.nexfly.system.mapper;
 
+import com.nexfly.api.system.bean.AppModelInfo;
 import com.nexfly.system.model.AppModel;
 import org.apache.ibatis.annotations.Param;
 
+import java.util.List;
+
 public interface AppModelMapper {
 
-    AppModel findByAppId(@Param("appId") Long appId);
+    List<AppModelInfo> findListByAppId(@Param("appId") Long appId);
 
     AppModel findById(@Param("appModelId") Long appModelId);
 

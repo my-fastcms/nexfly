@@ -1,5 +1,8 @@
 package com.nexfly.system.service.impl;
 
+import com.nexfly.common.auth.utils.AuthUtils;
+import com.nexfly.common.core.utils.UuidUtil;
+import com.nexfly.system.mapper.AccountMapper;
 import com.nexfly.system.mapper.DatasetMapper;
 import com.nexfly.system.mapper.DocumentMapper;
 import com.nexfly.system.mapper.DocumentSegmentMapper;
@@ -27,11 +30,22 @@ public class DatasetServiceImpl implements DatasetService {
     @Autowired
     private DocumentSegmentMapper documentSegmentMapper;
 
+    @Autowired
+    private AccountMapper accountMapper;
+
+    @Override
+    public Dataset getById(Long datasetId) {
+        return datasetMapper.findById(datasetId);
+    }
+
     @Override
     public void save(Dataset dataset) {
         if (dataset.getDatasetId() != null) {
             datasetMapper.update(dataset);
         } else {
+            String className = "Class" + UuidUtil.getSimpleUuid();
+            dataset.setVsIndexNodeId(className);
+            dataset.setOrgId(accountMapper.getUserOrg(AuthUtils.getUserId()).getOrgId());
             datasetMapper.save(dataset);
         }
     }
@@ -44,7 +58,7 @@ public class DatasetServiceImpl implements DatasetService {
         for (Dataset dataset : datasetList) {
             Long docNum = documentMapper.getCountByDatasetId(dataset.getDatasetId());
             Long chunkNum = documentSegmentMapper.getCountByDatasetId(dataset.getDatasetId());
-            datasetRespList.add(new DatasetResponse(dataset.getDatasetId(), dataset.getName(), dataset.getDescription(), docNum, chunkNum));
+            datasetRespList.add(new DatasetResponse(dataset.getDatasetId(), dataset.getName(), dataset.getDescription(), docNum, chunkNum, dataset.getCreateAt(), dataset.getUpdateAt()));
         }
         
         return datasetRespList;

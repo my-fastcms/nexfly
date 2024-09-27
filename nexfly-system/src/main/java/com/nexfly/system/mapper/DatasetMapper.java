@@ -1,6 +1,7 @@
 package com.nexfly.system.mapper;
 
 import com.nexfly.system.model.Dataset;
+import com.nexfly.system.service.DatasetService;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
@@ -15,5 +16,9 @@ public interface DatasetMapper {
     List<Dataset> findDatasetListByAppId(@Param("appId") Long appId);
 
     List<Dataset> findDatasetList(@Param("userId") Long userId);
+
+    void deleteAppDataset(@Param("appId") Long appId);
+
+    void insertAppDatasetList(@Param("appDatasetList") List<DatasetService.AppDataset> appDatasetList);
 
 }

@@ -1,0 +1,10 @@
+provider: ollama
+label: Ollama
+status: 1
+supportedModelTypes:
+  - llm
+  - tts
+  - text-embedding
+configurateMethods:
+  - predefined-model
+

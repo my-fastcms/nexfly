@@ -1,6 +1,5 @@
 package com.nexfly.system.service;
 
-import com.nexfly.common.core.exception.NexflyException;
 import com.nexfly.system.model.Provider;
 import com.nexfly.system.model.ProviderModel;
 
@@ -12,7 +11,7 @@ import java.util.Map;
  */
 public interface ProviderService {
 
-    ProviderModel findModelById(Long modelId);
+    List<SystemProviderInfo> getSystemProviderList();
 
     /**
      * 获取当前用户组织下已添加的大模型列表
@@ -23,22 +22,35 @@ public interface ProviderService {
 
     List<Provider> getProviderListByOrgId(Long orgId);
 
-    List<ProviderModel> getProviderModelList();
+    ProviderModel getProviderModelByOrgAndName(Long orgId, String providerName, String modelName);
 
-    List<Provider> getProviderList();
-
-    ProviderModel getProviderModelByOrgAndName(Long orgId, String modelType);
-
-    void saveProviderModel(ProviderModel providerModel) throws NexflyException;
-
+    /**
+     * 获取用户可用的大模型列表
+     * @return
+     */
     Map<String, Object> getUserAvailableProviderList();
 
-    record Llm(String name, String type, String usedToken) {
+    /**
+     * 获取用户已添加配置的大模型列表
+     * @return
+     */
+    Map<String, Object> getUserAddedProviderList();
+
+    void saveApiKey(ApiKey apiKey) throws Exception;
+
+    record Llm(String provider, String name, String type, String usedToken) {
 
     }
 
     record LlmModel(List<Llm> llm, String tags) {
 
+    }
+
+    record ApiKey(String provider, String apiKey, String apiUrl) {
+
+    }
+
+    record SystemProviderInfo(String label, String provider, List<String> modelTypes, String tags, String status) {
     }
 
 }

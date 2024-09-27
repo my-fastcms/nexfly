@@ -15,7 +15,7 @@
     `app_model_id`,`app_id`,`model_id`,`create_at`,`create_by`,`update_at`,`update_by`,`model_config`
   </sql>
   <insert id="save">
-    insert into app_model (`app_model_id`,`app_id`,`model_id`,`create_by`,`update_by`,`model_config`) values (#{appModel.appModelId},#{appModel.appId},#{appModel.modelId},#{appModel.createBy},#{appModel.updateBy},#{appModel.modelConfig})
+    insert into app_model (`app_id`,`model_id`,`create_by`,`update_by`,`model_config`) values (#{appModel.appId},#{appModel.modelId},#{appModel.createBy},#{appModel.updateBy},#{appModel.modelConfig})
   </insert>
   <update id="update">
     update app_model
@@ -25,6 +25,9 @@
       </if>
       <if test="appModel.modelId != null">
         model_id = #{appModel.modelId,jdbcType=BIGINT},
+      </if>
+      <if test="appModel.modelConfig != null">
+        model_config = #{appModel.modelConfig,jdbcType=VARCHAR},
       </if>
       <if test="appModel.createAt != null">
         create_at = #{appModel.createAt,jdbcType=TIMESTAMP},
@@ -45,7 +48,9 @@
   <select id="findById" resultMap="BaseResultMap">
     select <include refid="Vo_Column_List"/> from app_model where app_model_id = #{appModelId}
   </select>
-    <select id="findByAppId" resultMap="BaseResultMap">
-      select <include refid="Vo_Column_List"/> from app_model where app_id = #{appId}
+    <select id="findListByAppId" resultType="com.nexfly.api.system.bean.AppModelInfo">
+      select am.`app_model_id`, am.`app_id`, am.`model_id`, am.`model_config`, pm.provider_name, pm.model_name, pm.model_type from app_model am
+        left join provider_model pm on am.model_id = pm.model_id
+        where app_id = #{appId}
     </select>
 </mapper>

@@ -1,7 +1,7 @@
 provider: tongyi
 model: qwen-turbo
 label: qwen-turbo
-modelType: llm
+modelType: chat
 modelProperties:
   mode: completion
   contextSize: 8192

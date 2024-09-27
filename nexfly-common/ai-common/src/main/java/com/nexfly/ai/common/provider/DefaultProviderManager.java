@@ -30,12 +30,26 @@ public class DefaultProviderManager implements ProviderManager, InitializingBean
     }
 
     @Override
+    public List<SystemProvider> getSystemAvailableProviderList() {
+        return getSystemProviderList().stream().filter(pm -> pm.getStatus().equals("1")).toList();
+    }
+
+    @Override
     public Map<String, SystemProvider> getSystemProviderMap() {
         return providerList.stream().collect(Collectors.toMap(SystemProvider::getProvider, SystemProvider -> SystemProvider));
     }
 
     @Override
+    public Map<String, SystemProvider> getSystemAvailableProviderMap() {
+        return getSystemAvailableProviderList().stream().collect(Collectors.toMap(SystemProvider::getProvider, SystemProvider -> SystemProvider));
+    }
+
+    @Override
     public void afterPropertiesSet() throws Exception {
+        initSystemProvider();
+    }
+
+    void initSystemProvider() {
         try {
             // 加载provider
             Resource[] providerResources = new PathMatchingResourcePatternResolver().getResources("provider/*.yaml");

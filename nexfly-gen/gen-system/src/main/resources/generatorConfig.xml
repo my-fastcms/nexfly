@@ -93,12 +93,14 @@
         </table>
         -->
 
+        <!--
         <table tableName="app_conversation">
             <generatedKey column="conversation_id" sqlStatement="MySql" identity="true"/>
         </table>
+        -->
 
-        <table tableName="app_message">
-            <generatedKey column="message_id" sqlStatement="MySql" identity="true"/>
+        <table tableName="file">
+            <generatedKey column="file_id" sqlStatement="MySql" identity="true"/>
         </table>
 
     </context>

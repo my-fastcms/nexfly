@@ -7,6 +7,8 @@ import com.nexfly.system.service.DocumentService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 /**
  * @Author wangjun
  * @Date 2024/8/25
@@ -16,6 +18,11 @@ public class DocumentServiceImpl implements DocumentService {
 
     @Autowired
     private DocumentMapper documentMapper;
+
+    @Override
+    public List<Document> list(Long datasetId) {
+        return documentMapper.findDocumentListByDatasetId(datasetId);
+    }
 
     @Override
     public void saveDocument(DocumentParam documentParam) throws NexflyException {

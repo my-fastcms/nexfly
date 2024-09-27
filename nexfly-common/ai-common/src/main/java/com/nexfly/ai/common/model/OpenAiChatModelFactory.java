@@ -10,7 +10,7 @@ import org.springframework.stereotype.Service;
 /**
  * open ai
  */
-@Service("openai-llm")
+@Service("openai-chat")
 public class OpenAiChatModelFactory extends AbstractModelFactory {
 
     @Override

@@ -1,7 +1,7 @@
 provider: openai
 model: gpt-4o-mini
 label: gpt-4o-mini
-modelType: llm
+modelType: chat
 features:
   - multi-tool-call
   - agent-thought

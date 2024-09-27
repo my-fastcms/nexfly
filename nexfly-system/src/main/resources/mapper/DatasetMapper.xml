@@ -64,4 +64,16 @@
     <select id="findDatasetList" resultType="com.nexfly.system.model.Dataset">
       select * from dataset d where d.create_by = #{userId} order by d.update_at desc;
     </select>
+
+  <delete id="deleteAppDataset">
+    delete from app_dataset where app_id = #{appId}
+  </delete>
+
+  <insert id="insertAppDatasetList">
+    insert into app_dataset (`app_id`,`dataset_id`) values
+    <foreach collection="appDatasetList" item="ad" separator=",">
+      (#{ad.appId},#{ad.datasetId})
+    </foreach>
+  </insert>
+
 </mapper>

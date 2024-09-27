@@ -19,10 +19,10 @@ import java.util.List;
 @Service
 public class WeaviateVectorStoreFactory implements VectorStoreFactory {
 
-    @Value("${weaviate.host:}")
+    @Value("${vector-store.weaviate.host:}")
     private String host;
 
-    @Value("${weaviate.key:}")
+    @Value("${vector-store.weaviate.key:}")
     private String apiKey;
 
     @Override

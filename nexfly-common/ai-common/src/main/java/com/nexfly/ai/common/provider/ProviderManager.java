@@ -15,6 +15,14 @@ public interface ProviderManager {
      */
     List<SystemProvider> getSystemProviderList();
 
+    List<SystemProvider> getSystemAvailableProviderList();
+
+    /**
+     * 获取系统支持配置的大模型提供商Map结构，key值为provider配置中的provider值
+     * @return
+     */
     Map<String, SystemProvider> getSystemProviderMap();
+
+    Map<String, SystemProvider> getSystemAvailableProviderMap();
 
 }

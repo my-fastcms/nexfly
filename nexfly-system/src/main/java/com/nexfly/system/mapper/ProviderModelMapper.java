@@ -14,8 +14,8 @@ public interface ProviderModelMapper {
 
     List<ProviderModel> getListByOrgId(@Param("orgId") Long orgId);
 
-    List<ProviderModel> list();
+    ProviderModel getProviderModelByOrgAndName(@Param("orgId") Long orgId, @Param("providerName") String providerName, @Param("modelName") String modelName);
 
-    ProviderModel getProviderModelByOrgAndName(@Param("orgId") Long orgId, @Param("modelName") String modelName);
+    void insertBatch(@Param("providerModelList") List<ProviderModel> providerModelList);
 
 }

@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.nexfly.system.mapper.FileMapper">
+  <resultMap id="BaseResultMap" type="com.nexfly.system.model.File">
+    <id column="file_id" property="fileId" />
+    <result column="file_name" property="fileName" />
+    <result column="path" property="path" />
+    <result column="size" property="size" />
+    <result column="type" property="type" />
+    <result column="create_by" property="createBy" />
+    <result column="create_at" property="createAt" />
+    <result column="update_by" property="updateBy" />
+    <result column="update_at" property="updateAt" />
+  </resultMap>
+  <sql id="Vo_Column_List">
+    `file_id`,`file_name`,`path`,`size`,`type`,`create_by`,`create_at`,`update_by`,`update_at`
+  </sql>
+  <insert id="save">
+    insert into file (`file_id`,`file_name`,`path`,`size`,`type`,`create_by`,`update_by`) values (#{file.fileId},#{file.fileName},#{file.path},#{file.size},#{file.type},#{file.createBy},#{file.updateBy})
+  </insert>
+  <update id="update">
+    update file
+    <set>
+      <if test="file.fileName != null">
+        file_name = #{file.fileName,jdbcType=VARCHAR},
+      </if>
+      <if test="file.path != null">
+        path = #{file.path,jdbcType=VARCHAR},
+      </if>
+      <if test="file.size != null">
+        size = #{file.size,jdbcType=BIGINT},
+      </if>
+      <if test="file.type != null">
+        type = #{file.type,jdbcType=VARCHAR},
+      </if>
+      <if test="file.createBy != null">
+        create_by = #{file.createBy,jdbcType=BIGINT},
+      </if>
+      <if test="file.createAt != null">
+        create_at = #{file.createAt,jdbcType=TIMESTAMP},
+      </if>
+      <if test="file.updateBy != null">
+        update_by = #{file.updateBy,jdbcType=BIGINT},
+      </if>
+      <if test="file.updateAt != null">
+        update_at = #{file.updateAt,jdbcType=TIMESTAMP},
+      </if>
+    </set>
+    where file_id = #{file.fileId,jdbcType=BIGINT}
+     
+  </update>
+  <select id="findById" resultMap="BaseResultMap">
+    select <include refid="Vo_Column_List"/> from file where file_id = #{fileId}
+  </select>
+</mapper>

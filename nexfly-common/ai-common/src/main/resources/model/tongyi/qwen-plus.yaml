@@ -1,7 +1,7 @@
 provider: tongyi
 model: qwen-plus
 label: qwen-plus
-modelType: llm
+modelType: chat
 features:
   - agent-thought
 modelProperties:

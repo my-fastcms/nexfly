@@ -1,5 +1,5 @@
 provider: zhipu
 model: text_embedding
-modelType: text-embedding
+modelType: embedding
 modelProperties:
   contextSize: 512

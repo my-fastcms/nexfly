@@ -2,28 +2,40 @@ package com.nexfly.ai.common.model;
 
 public class CreateModel {
 
-    private Long orgId;
+    private String apiKey;
+    private String apiUrl;
     private String providerName;
     private String modelName;
     private String modelType;
-    private String modelConfig;
     private String config;
 
-    public CreateModel(Long orgId, String providerName, String modelName, String modelType, String modelConfig, String config) {
-        this.orgId = orgId;
+    public CreateModel(String apiKey, String apiUrl, String providerName, String modelName, String modelType, String config) {
+        this.apiKey = apiKey;
+        this.apiUrl = apiUrl;
         this.providerName = providerName;
         this.modelName = modelName;
         this.modelType = modelType;
-        this.modelConfig = modelConfig;
         this.config = config;
     }
 
-    public Long getOrgId() {
-        return orgId;
+    public CreateModel(String appKey, String apiUrl, String providerName, String modelName, String modelType) {
+        this(appKey, apiUrl, providerName, modelName, modelType, null);
     }
 
-    public void setOrgId(Long orgId) {
-        this.orgId = orgId;
+    public String getApiKey() {
+        return apiKey;
+    }
+
+    public void setApiKey(String apiKey) {
+        this.apiKey = apiKey;
+    }
+
+    public String getApiUrl() {
+        return apiUrl;
+    }
+
+    public void setApiUrl(String apiUrl) {
+        this.apiUrl = apiUrl;
     }
 
     public String getProviderName() {
@@ -48,14 +60,6 @@ public class CreateModel {
 
     public void setModelType(String modelType) {
         this.modelType = modelType;
-    }
-
-    public String getModelConfig() {
-        return modelConfig;
-    }
-
-    public void setModelConfig(String modelConfig) {
-        this.modelConfig = modelConfig;
     }
 
     public String getConfig() {

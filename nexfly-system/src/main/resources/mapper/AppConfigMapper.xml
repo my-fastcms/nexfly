@@ -5,16 +5,24 @@
     <id column="config_id" property="configId" />
     <result column="app_id" property="appId" />
     <result column="org_id" property="orgId" />
+    <result column="pre_prompt" property="prePrompt" />
+    <result column="form_variable" property="formVariable" />
+    <result column="empty_response" property="emptyResponse" />
+    <result column="prologue" property="prologue" />
+    <result column="quote" property="quote" />
+    <result column="file_upload" property="fileUpload" />
+    <result column="text_to_speech" property="textToSpeech" />
+    <result column="speech_to_text" property="speechToText" />
     <result column="create_at" property="createAt" />
     <result column="create_by" property="createBy" />
     <result column="update_at" property="updateAt" />
     <result column="update_by" property="updateBy" />
   </resultMap>
   <sql id="Vo_Column_List">
-    `config_id`,`app_id`,`org_id`,`create_at`,`create_by`,`update_at`,`update_by`,`pre_prompt`,`form_variable`,`file_upload`,`text_to_speech`,`speech_to_text`
+    `config_id`,`app_id`,`org_id`,`create_at`,`create_by`,`update_at`,`update_by`,`pre_prompt`,`form_variable`,`empty_response`,`prologue`,`quote`,`file_upload`,`text_to_speech`,`speech_to_text`
   </sql>
   <insert id="save">
-    insert into app_config (`config_id`,`app_id`,`org_id`,`create_by`,`update_by`,`pre_prompt`,`form_variable`,`file_upload`,`text_to_speech`,`speech_to_text`) values (#{appConfig.configId},#{appConfig.appId},#{appConfig.orgId},#{appConfig.createBy},#{appConfig.updateBy},#{appConfig.prePrompt},#{appConfig.formVariable},#{appConfig.fileUpload},#{appConfig.textToSpeech},#{appConfig.speechToText})
+    insert into app_config (`config_id`,`app_id`,`org_id`,`create_by`,`update_by`,`pre_prompt`,`form_variable`,`empty_response`,`prologue`,`quote`,`file_upload`,`text_to_speech`,`speech_to_text`) values (#{appConfig.configId},#{appConfig.appId},#{appConfig.orgId},#{appConfig.createBy},#{appConfig.updateBy},#{appConfig.prePrompt},#{appConfig.formVariable},#{appConfig.emptyResponse},#{appConfig.prologue},#{appConfig.quote},#{appConfig.fileUpload},#{appConfig.textToSpeech},#{appConfig.speechToText})
   </insert>
   <update id="update">
     update app_config
@@ -24,6 +32,30 @@
       </if>
       <if test="appConfig.orgId != null">
         org_id = #{appConfig.orgId,jdbcType=BIGINT},
+      </if>
+      <if test="appConfig.prePrompt != null">
+        pre_prompt = #{appConfig.prePrompt,jdbcType=VARCHAR},
+      </if>
+      <if test="appConfig.formVariable != null">
+        form_variable = #{appConfig.formVariable,jdbcType=VARCHAR},
+      </if>
+      <if test="appConfig.emptyResponse != null">
+        empty_response = #{appConfig.emptyResponse,jdbcType=VARCHAR},
+      </if>
+      <if test="appConfig.prologue != null">
+        prologue = #{appConfig.prologue,jdbcType=VARCHAR},
+      </if>
+      <if test="appConfig.quote != null">
+        quote = #{appConfig.quote,jdbcType=INTEGER},
+      </if>
+      <if test="appConfig.fileUpload != null">
+        file_upload = #{appConfig.fileUpload,jdbcType=VARCHAR},
+      </if>
+      <if test="appConfig.textToSpeech != null">
+        text_to_speech = #{appConfig.textToSpeech,jdbcType=VARCHAR},
+      </if>
+      <if test="appConfig.speechToText != null">
+        speech_to_text = #{appConfig.speechToText,jdbcType=VARCHAR},
       </if>
       <if test="appConfig.createAt != null">
         create_at = #{appConfig.createAt,jdbcType=TIMESTAMP},

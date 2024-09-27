@@ -4,13 +4,13 @@ import com.nexfly.common.auth.utils.AuthUtils;
 import com.nexfly.common.core.constants.NexflyConstants;
 import com.nexfly.common.core.rest.RestResult;
 import com.nexfly.common.core.rest.RestResultUtils;
+import com.nexfly.common.core.utils.UuidUtil;
 import com.nexfly.system.model.Dataset;
 import com.nexfly.system.service.DatasetService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.UUID;
 
 /**
  * @Author wangjun
@@ -25,8 +25,6 @@ public class DatasetController {
 
     @PostMapping("save")
     public Object save(@RequestBody Dataset dataset) {
-        String className = "Class" + UUID.randomUUID().toString().replaceAll("-", "");
-        dataset.setVsIndexNodeId(className);
         datasetService.save(dataset);
         return RestResultUtils.success();
     }
@@ -34,6 +32,11 @@ public class DatasetController {
     @GetMapping("list")
     public RestResult<List<DatasetService.DatasetResponse>> list() {
         return RestResultUtils.success(datasetService.list(AuthUtils.getUserId()));
+    }
+
+    @GetMapping("detail")
+    public RestResult<Dataset> detail(@RequestParam("datasetId") Long datasetId) {
+        return RestResultUtils.success(datasetService.getById(datasetId));
     }
 
 }

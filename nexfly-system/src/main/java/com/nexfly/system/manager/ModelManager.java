@@ -1,21 +1,21 @@
 package com.nexfly.system.manager;
 
 import com.nexfly.ai.common.model.CreateModel;
-import org.springframework.ai.chat.client.ChatClient;
+import com.nexfly.system.service.ProviderService;
 import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.ai.embedding.EmbeddingModel;
 import org.springframework.ai.image.ImageModel;
 
 public interface ModelManager {
 
-    ChatClient getChatClient(Long orgId, String modelName);
+    ChatModel getChatModel(Long appId);
 
-    ChatModel getChatModel(Long orgId, String modelName);
+    EmbeddingModel getEmbeddingModel(Long datasetId);
 
-    EmbeddingModel getEmbeddingModel(Long orgId, String modelName);
-
-    ImageModel getImageModel(Long orgId, String modelName);
+    ImageModel getImageModel(Long appId);
 
     Object createModel(CreateModel createModel) throws Exception;
+
+    Boolean checkApiKey(ProviderService.ApiKey apiKey);
 
 }

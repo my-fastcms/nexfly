@@ -1,7 +1,7 @@
 provider: tongyi
 model: qwen-long
 label: qwen-long
-modelType: llm
+modelType: chat
 features:
   - multi-tool-call
   - agent-thought

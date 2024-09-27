@@ -1,7 +1,7 @@
 provider: zhipu
 model: glm-4v
 label: glm-4v
-modelType: llm
+modelType: chat
 modelProperties:
   mode: chat
 features:

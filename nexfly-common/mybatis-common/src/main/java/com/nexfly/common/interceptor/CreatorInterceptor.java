@@ -1,6 +1,7 @@
 package com.nexfly.common.interceptor;
 
 import com.nexfly.common.auth.utils.AuthUtils;
+import com.nexfly.common.model.BaseModel;
 import org.apache.ibatis.binding.MapperMethod;
 import org.apache.ibatis.executor.Executor;
 import org.apache.ibatis.mapping.MappedStatement;
@@ -20,6 +21,9 @@ import java.util.Map;
 })
 public class CreatorInterceptor implements Interceptor {
 
+    final String CREATEBY_METHOD = "setCreateBy";
+    final String UPDATEBY_METHOD = "setUpdateBy";
+
     @Override
     public Object intercept(Invocation invocation) throws Throwable {
 
@@ -29,22 +33,24 @@ public class CreatorInterceptor implements Interceptor {
         }
 
         Object parameter = invocation.getArgs()[1];
-        if (parameter != null) {
-            if (parameter instanceof Map<?,?>) {
-                parameter = ((MapperMethod.ParamMap) parameter).get("param1");
-            }
-            try {
-                if (AuthUtils.getUser() != null) {
-                    Method method = parameter.getClass().getSuperclass().getMethod("setCreateBy", Long.class);
-                    method.invoke(parameter, AuthUtils.getUserId());
-                    method = parameter.getClass().getMethod("setUpdateBy", Long.class);
-                    method.invoke(parameter, AuthUtils.getUserId());
-                }
-            } catch (Exception e) {
-                return invocation.proceed();
-            }
+        if (parameter == null) {
+            return invocation.proceed();
         }
-        return invocation.proceed();
+
+        if (parameter instanceof Map<?,?>) {
+            parameter = ((MapperMethod.ParamMap<?>) parameter).get(((MapperMethod.ParamMap<?>) parameter).keySet().stream().toList().get(0));
+        }
+        try {
+            if (AuthUtils.getUser() != null && parameter instanceof BaseModel) {
+                Method method = parameter.getClass().getSuperclass().getMethod(CREATEBY_METHOD, Long.class);
+                method.invoke(parameter, AuthUtils.getUserId());
+                method = parameter.getClass().getSuperclass().getMethod(UPDATEBY_METHOD, Long.class);
+                method.invoke(parameter, AuthUtils.getUserId());
+            }
+            return invocation.proceed();
+        } catch (Exception e) {
+            return invocation.proceed();
+        }
     }
 
 }

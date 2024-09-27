@@ -14,6 +14,12 @@ public class AppConfig extends BaseModel implements Serializable {
 
     private String formVariable;
 
+    private String emptyResponse;
+
+    private String prologue;
+
+    private Boolean quote;
+
     private String fileUpload;
 
     private String textToSpeech;
@@ -60,6 +66,30 @@ public class AppConfig extends BaseModel implements Serializable {
 
     public void setFormVariable(String formVariable) {
         this.formVariable = formVariable;
+    }
+
+    public String getEmptyResponse() {
+        return emptyResponse;
+    }
+
+    public void setEmptyResponse(String emptyResponse) {
+        this.emptyResponse = emptyResponse;
+    }
+
+    public String getPrologue() {
+        return prologue;
+    }
+
+    public void setPrologue(String prologue) {
+        this.prologue = prologue;
+    }
+
+    public Boolean getQuote() {
+        return quote;
+    }
+
+    public void setQuote(Boolean quote) {
+        this.quote = quote;
     }
 
     public String getFileUpload() {

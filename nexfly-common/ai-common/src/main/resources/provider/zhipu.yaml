@@ -1,8 +1,6 @@
 provider: zhipu
 label: ZHIPU-AI
-iconSmall: icon_s.svg
-iconLarge: icon_l.svg
-background: "#EFF1FE"
+status: 1
 help:
   title: 从智谱 AI 获取 API Key
   url: https://open.bigmodel.cn/usercenter/apikeys
@@ -11,9 +9,3 @@ supportedModelTypes:
   - text-embedding
 configurateMethods:
   - predefined-model
-modelCredentials:
-  - variable: api_key
-    label: APIKey
-    type: secret-input
-    required: true
-    placeholder: 在此输入您的 APIKey
