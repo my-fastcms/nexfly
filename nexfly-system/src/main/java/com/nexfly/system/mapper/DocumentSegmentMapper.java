@@ -3,6 +3,8 @@ package com.nexfly.system.mapper;
 import com.nexfly.system.model.DocumentSegment;
 import org.apache.ibatis.annotations.Param;
 
+import java.util.List;
+
 public interface DocumentSegmentMapper {
     DocumentSegment findById(@Param("segmentId") Long segmentId);
 
@@ -11,5 +13,9 @@ public interface DocumentSegmentMapper {
     void update(@Param("documentSegment") DocumentSegment DocumentSegment);
 
     Long getCountByDatasetId(@Param("datasetId") Long datasetId);
+
+    List<DocumentSegment> getListByDocumentId(@Param("documentId") Long documentId);
+
+    void insertBatch(@Param("segmentList") List<DocumentSegment> segmentList);
 
 }

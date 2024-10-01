@@ -1,12 +1,15 @@
 package com.nexfly.system.model;
 
 import com.nexfly.common.model.BaseModel;
+
 import java.io.Serializable;
 
-public class File extends BaseModel implements Serializable {
-    private Long fileId;
+public class Attachment extends BaseModel implements Serializable {
+    private Long attachmentId;
 
     private String fileName;
+
+    private Long orgId;
 
     private String path;
 
@@ -16,12 +19,20 @@ public class File extends BaseModel implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    public Long getFileId() {
-        return fileId;
+    public Long getAttachmentId() {
+        return attachmentId;
     }
 
-    public void setFileId(Long fileId) {
-        this.fileId = fileId;
+    public void setAttachmentId(Long attachmentId) {
+        this.attachmentId = attachmentId;
+    }
+
+    public Long getOrgId() {
+        return orgId;
+    }
+
+    public void setOrgId(Long orgId) {
+        this.orgId = orgId;
     }
 
     public String getFileName() {
@@ -62,7 +73,7 @@ public class File extends BaseModel implements Serializable {
         sb.append(getClass().getSimpleName());
         sb.append(" [");
         sb.append("Hash = ").append(hashCode());
-        sb.append(", fileId=").append(fileId);
+        sb.append(", attachment=").append(attachmentId);
         sb.append(", fileName=").append(fileName);
         sb.append(", path=").append(path);
         sb.append(", size=").append(size);

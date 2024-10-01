@@ -11,6 +11,8 @@ public class Document extends BaseModel implements Serializable {
 
     private Long datasetId;
 
+    private Long fileId;
+
     private String name;
 
     private Integer dataSource;
@@ -20,6 +22,10 @@ public class Document extends BaseModel implements Serializable {
     private Integer tokenCount;
 
     private String dataUrl;
+
+    private String processType;
+
+    private Integer processStatus;
 
     private static final long serialVersionUID = 1L;
 
@@ -45,6 +51,14 @@ public class Document extends BaseModel implements Serializable {
 
     public void setDatasetId(Long datasetId) {
         this.datasetId = datasetId;
+    }
+
+    public Long getFileId() {
+        return fileId;
+    }
+
+    public void setFileId(Long fileId) {
+        this.fileId = fileId;
     }
 
     public String getName() {
@@ -87,6 +101,22 @@ public class Document extends BaseModel implements Serializable {
         this.dataUrl = dataUrl;
     }
 
+    public String getProcessType() {
+        return processType;
+    }
+
+    public void setProcessType(String processType) {
+        this.processType = processType;
+    }
+
+    public Integer getProcessStatus() {
+        return processStatus;
+    }
+
+    public void setProcessStatus(Integer processStatus) {
+        this.processStatus = processStatus;
+    }
+
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
@@ -101,6 +131,8 @@ public class Document extends BaseModel implements Serializable {
         sb.append(", wordCount=").append(wordCount);
         sb.append(", tokenCount=").append(tokenCount);
         sb.append(", dataUrl=").append(dataUrl);
+        sb.append(", processType=").append(processType);
+        sb.append(", processStatus=").append(processStatus);
         sb.append(", serialVersionUID=").append(serialVersionUID);
         sb.append("]");
         return sb.toString();

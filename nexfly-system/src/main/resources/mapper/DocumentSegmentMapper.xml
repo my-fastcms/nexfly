@@ -71,4 +71,13 @@
     <select id="getCountByDatasetId" resultType="java.lang.Long">
       select count(1) from document_segment where dataset_id = #{datasetId}
     </select>
+    <select id="getListByDocumentId" resultMap="BaseResultMap">
+      select <include refid="Vo_Column_List"/> from document_segment where document_id = #{documentId}
+    </select>
+  <insert id="insertBatch">
+    insert into document_segment (`document_id`,`org_id`,`dataset_id`,`position`,`word_count`,`token_count`,`status`,`hit_count`,`create_by`,`update_by`,`content`,`content_id`,`keywords`) values
+    <foreach collection="segmentList" item="documentSegment" separator=",">
+      (#{documentSegment.documentId},#{documentSegment.orgId},#{documentSegment.datasetId},#{documentSegment.position},#{documentSegment.wordCount},#{documentSegment.tokenCount},#{documentSegment.status},#{documentSegment.hitCount},#{documentSegment.createBy},#{documentSegment.updateBy},#{documentSegment.content},#{documentSegment.contentId},#{documentSegment.keywords})
+    </foreach>
+  </insert>
 </mapper>

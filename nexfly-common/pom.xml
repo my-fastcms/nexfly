@@ -20,6 +20,7 @@
         <module>wechat-common</module>
         <module>email-common</module>
         <module>ai-common</module>
+        <module>oss-common</module>
     </modules>
 
     <dependencies>

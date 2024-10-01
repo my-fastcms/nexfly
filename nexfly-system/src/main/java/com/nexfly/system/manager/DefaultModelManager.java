@@ -14,7 +14,6 @@ import com.nexfly.system.model.App;
 import com.nexfly.system.model.Dataset;
 import com.nexfly.system.model.Provider;
 import com.nexfly.system.model.ProviderModel;
-import com.nexfly.system.service.AppService;
 import com.nexfly.system.service.ProviderService;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;

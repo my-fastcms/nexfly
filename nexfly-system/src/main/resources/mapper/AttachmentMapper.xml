@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.nexfly.system.mapper.FileMapper">
-  <resultMap id="BaseResultMap" type="com.nexfly.system.model.File">
-    <id column="file_id" property="fileId" />
+<mapper namespace="com.nexfly.system.mapper.AttachmentMapper">
+  <resultMap id="BaseResultMap" type="com.nexfly.system.model.Attachment">
+    <id column="attachment_id" property="attachmentId" />
     <result column="file_name" property="fileName" />
     <result column="path" property="path" />
     <result column="size" property="size" />
@@ -13,13 +13,13 @@
     <result column="update_at" property="updateAt" />
   </resultMap>
   <sql id="Vo_Column_List">
-    `file_id`,`file_name`,`path`,`size`,`type`,`create_by`,`create_at`,`update_by`,`update_at`
+    `attachment_id`,`file_name`,`path`,`size`,`type`,`create_by`,`create_at`,`update_by`,`update_at`
   </sql>
-  <insert id="save">
-    insert into file (`file_id`,`file_name`,`path`,`size`,`type`,`create_by`,`update_by`) values (#{file.fileId},#{file.fileName},#{file.path},#{file.size},#{file.type},#{file.createBy},#{file.updateBy})
+  <insert id="save" useGeneratedKeys="true" keyProperty="attachmentId" keyColumn="attachment_id" parameterType="com.nexfly.system.model.Attachment">
+    insert into attachment (`org_id`,`file_name`,`path`,`size`,`type`,`create_by`,`update_by`) values (#{file.orgId},#{file.fileName},#{file.path},#{file.size},#{file.type},#{file.createBy},#{file.updateBy})
   </insert>
   <update id="update">
-    update file
+    update attachment
     <set>
       <if test="file.fileName != null">
         file_name = #{file.fileName,jdbcType=VARCHAR},
@@ -46,10 +46,10 @@
         update_at = #{file.updateAt,jdbcType=TIMESTAMP},
       </if>
     </set>
-    where file_id = #{file.fileId,jdbcType=BIGINT}
+    where attachment_id = #{file.fileId,jdbcType=BIGINT}
      
   </update>
   <select id="findById" resultMap="BaseResultMap">
-    select <include refid="Vo_Column_List"/> from file where file_id = #{fileId}
+    select <include refid="Vo_Column_List"/> from attachment where attachment_id = #{fileId}
   </select>
 </mapper>
