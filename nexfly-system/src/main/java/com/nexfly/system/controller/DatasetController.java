@@ -23,9 +23,9 @@ public class DatasetController {
     private DatasetService datasetService;
 
     @PostMapping("save")
-    public Object save(@RequestBody Dataset dataset) {
+    public RestResult<Object> save(@RequestBody Dataset dataset) {
         datasetService.save(dataset);
-        return RestResultUtils.success();
+        return RestResultUtils.success(dataset.getDatasetId());
     }
 
     @GetMapping("list")
@@ -34,8 +34,14 @@ public class DatasetController {
     }
 
     @GetMapping("detail")
-    public RestResult<Dataset> detail(@RequestParam("datasetId") Long datasetId) {
+    public RestResult<DatasetService.DatasetDetailResponse> detail(@RequestParam("datasetId") Long datasetId) {
         return RestResultUtils.success(datasetService.getById(datasetId));
+    }
+
+    @PostMapping("delete")
+    public RestResult<Object> delete(@RequestBody DatasetService.DeleteRequest deleteRequest) {
+        datasetService.deleteByDatasetId(deleteRequest);
+        return RestResultUtils.success();
     }
 
 }

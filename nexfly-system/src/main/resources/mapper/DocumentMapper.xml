@@ -13,16 +13,17 @@
     <result column="data_url" property="dataUrl" />
     <result column="process_type" property="processType" />
     <result column="process_status" property="processStatus" />
+    <result column="status" property="status" />
     <result column="create_at" property="createAt" />
     <result column="create_by" property="createBy" />
     <result column="update_at" property="updateAt" />
     <result column="update_by" property="updateBy" />
   </resultMap>
   <sql id="Vo_Column_List">
-    `document_id`,`org_id`,`dataset_id`,`file_id`,`name`,`data_source`,`word_count`,`token_count`,`data_url`,`process_type`,`process_status`,`create_at`,`create_by`,`update_at`,`update_by`
+    `document_id`,`org_id`,`dataset_id`,`file_id`,`name`,`data_source`,`word_count`,`token_count`,`data_url`,`process_type`,`process_status`,`status`,`create_at`,`create_by`,`update_at`,`update_by`
   </sql>
   <insert id="save" useGeneratedKeys="true" keyProperty="documentId" keyColumn="document_id" parameterType="com.nexfly.system.model.Document">
-    insert into document (`org_id`,`dataset_id`,`file_id`,`name`,`data_source`,`word_count`,`token_count`,`data_url`,`process_type`,`process_status`,`create_by`,`update_by`) values (#{document.orgId},#{document.datasetId},#{document.fileId},#{document.name},#{document.dataSource},#{document.wordCount},#{document.tokenCount},#{document.dataUrl},#{document.processType},#{document.processStatus},#{document.createBy},#{document.updateBy})
+    insert into document (`org_id`,`dataset_id`,`file_id`,`name`,`data_source`,`word_count`,`token_count`,`data_url`,`process_type`,`process_status`,`status`,`create_by`,`update_by`) values (#{document.orgId},#{document.datasetId},#{document.fileId},#{document.name},#{document.dataSource},#{document.wordCount},#{document.tokenCount},#{document.dataUrl},#{document.processType},#{document.processStatus},#{document.status},#{document.createBy},#{document.updateBy})
   </insert>
   <update id="update">
     update document
@@ -33,7 +34,7 @@
       <if test="document.datasetId != null">
         dataset_id = #{document.datasetId,jdbcType=BIGINT},
       </if>
-      <if test="document.filetId != null">
+      <if test="document.fileId != null">
         file_id = #{document.fileId,jdbcType=BIGINT},
       </if>
       <if test="document.name != null">
@@ -57,6 +58,9 @@
       <if test="document.processStatus != null">
         process_status = #{document.processStatus,jdbcType=INTEGER},
       </if>
+      <if test="document.status != null">
+        status = #{document.status,jdbcType=INTEGER},
+      </if>
       <if test="document.createAt != null">
         create_at = #{document.createAt,jdbcType=TIMESTAMP},
       </if>
@@ -73,6 +77,13 @@
     where document_id = #{document.documentId,jdbcType=BIGINT}
      
   </update>
+    <delete id="deleteByDocumentIds">
+      delete from document
+      where document_id in
+      <foreach collection="documentIds" item="documentId" open="(" separator="," close=")">
+        #{documentId}
+      </foreach>
+    </delete>
   <select id="findById" resultMap="BaseResultMap">
     select <include refid="Vo_Column_List"/> from document where document_id = #{documentId}
   </select>

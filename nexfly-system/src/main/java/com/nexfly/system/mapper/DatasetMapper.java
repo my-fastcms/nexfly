@@ -21,4 +21,6 @@ public interface DatasetMapper {
 
     void insertAppDatasetList(@Param("appDatasetList") List<DatasetService.AppDataset> appDatasetList);
 
+    void deleteByDatasetId(@Param("datasetId") Long datasetId);
+
 }

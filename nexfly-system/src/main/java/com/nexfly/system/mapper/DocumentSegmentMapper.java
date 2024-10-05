@@ -18,4 +18,8 @@ public interface DocumentSegmentMapper {
 
     void insertBatch(@Param("segmentList") List<DocumentSegment> segmentList);
 
+    Long getCountByDocumentId(@Param("documentId") Long documentId);
+
+    void deleteByDocumentIds(@Param("documentIds") List<Long> documentIds);
+
 }

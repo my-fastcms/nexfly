@@ -1,17 +1,22 @@
 package com.nexfly.system.controller;
 
-import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.nexfly.common.core.constants.NexflyConstants;
 import com.nexfly.common.core.exception.NexflyException;
 import com.nexfly.common.core.rest.RestResult;
 import com.nexfly.common.core.rest.RestResultUtils;
+import com.nexfly.common.core.utils.UuidUtil;
 import com.nexfly.system.service.DocumentService;
+import jakarta.servlet.ServletOutputStream;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartException;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.InputStream;
+import java.net.URLEncoder;
+import java.util.List;
 import java.util.Objects;
 
 @RestController
@@ -49,9 +54,43 @@ public class DocumentController {
     }
 
     @GetMapping("list")
-    public Object list(@RequestParam("datasetId") Long datasetId, @RequestParam("page") Integer page, @RequestParam("pageSize") Integer pageSize) {
-        PageInfo<Object> documentPage = PageHelper.startPage(page, pageSize).doSelectPageInfo(() -> documentService.list(datasetId));
-        return RestResultUtils.success(documentPage);
+    public RestResult<PageInfo<DocumentService.DocumentResponse>> list(@RequestParam("datasetId") Long datasetId, @RequestParam("page") Integer page, @RequestParam("pageSize") Integer pageSize) {
+        return RestResultUtils.success(documentService.list(datasetId, page, pageSize));
+    }
+
+    @PostMapping("change/status")
+    public RestResult<Boolean> changeStatus(@RequestBody DocumentService.ChangeStatusRequest changeStatusRequest) throws NexflyException {
+        documentService.changeStatus(changeStatusRequest);
+        return RestResultUtils.success(true);
+    }
+
+    @PostMapping("rename")
+    public RestResult<Boolean> rename(@RequestBody DocumentService.RenameRequest renameRequest) throws NexflyException {
+        documentService.renameDocument(renameRequest);
+        return RestResultUtils.success(true);
+    }
+
+    @PostMapping("delete")
+    public RestResult<Boolean> delete(@RequestBody List<Long> documentIds) {
+        documentService.delete(documentIds);
+        return RestResultUtils.success(true);
+    }
+
+    @GetMapping("download")
+    public void download(@RequestParam("documentId") Long documentId, HttpServletResponse response) throws Exception {
+        response.reset();
+        InputStream inputStream = documentService.downloadDocument(documentId);
+        ServletOutputStream outputStream = response.getOutputStream();
+        response.setContentType("application/octet-stream");
+        response.setCharacterEncoding("utf-8");
+        response.addHeader("Content-Disposition", "attachment; filename=" + URLEncoder.encode(UuidUtil.getSimpleUuid(), "UTF-8"));
+        byte[] bytes = new byte[1024];
+        int len;
+        while ((len = inputStream.read(bytes)) > 0) {
+            outputStream.write(bytes, 0, len);
+        }
+        outputStream.close();
+        inputStream.close();
     }
 
 }

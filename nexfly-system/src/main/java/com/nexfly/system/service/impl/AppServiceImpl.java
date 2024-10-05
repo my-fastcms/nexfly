@@ -255,7 +255,7 @@ public class AppServiceImpl implements AppService {
         List<Advisor> requestResponseAdvisorList = new ArrayList<>();
         requestResponseAdvisorList.add(new PromptChatMemoryAdvisor(new NexflyChatMemory(AuthUtils.getUserId(), app.getAppId(), appMessageMapper)));
         for (Dataset dataset : datasetList) {
-            EmbeddingModel embeddingModel = modelManager.getEmbeddingModel(dataset.getEmbedModelId());
+            EmbeddingModel embeddingModel = modelManager.getEmbeddingModel(dataset.getDatasetId());
             var qaAdvisor = new QuestionAnswerAdvisor(vectorStoreManager.getVectorStoreFactory().getVectorStore(dataset.getVsIndexNodeId(), embeddingModel),
                     SearchRequest.defaults().withSimilarityThreshold(0.65).withTopK(6), system);
             requestResponseAdvisorList.add(qaAdvisor);

@@ -34,8 +34,11 @@ public class DatasetServiceImpl implements DatasetService {
     private AccountMapper accountMapper;
 
     @Override
-    public Dataset getById(Long datasetId) {
-        return datasetMapper.findById(datasetId);
+    public DatasetDetailResponse getById(Long datasetId) {
+        Dataset dataset = datasetMapper.findById(datasetId);
+        Long docNum = documentMapper.getCountByDatasetId(dataset.getDatasetId());
+        return new DatasetDetailResponse(dataset.getDatasetId(), dataset.getOrgId(), dataset.getName(),
+        dataset.getDescription(), dataset.getEmbedModelId(), dataset.getVsIndexNodeId(), dataset.getAvatar(), dataset.getLanguage(), dataset.getParserId(), dataset.getParserConfig(), docNum);
     }
 
     @Override
@@ -62,6 +65,20 @@ public class DatasetServiceImpl implements DatasetService {
         }
         
         return datasetRespList;
+    }
+
+    @Override
+    public void deleteByDatasetId(DeleteRequest deleteRequest) {
+        Long count = documentMapper.getCountByDatasetId(deleteRequest.datasetId());
+        if (count == 0) {
+            datasetMapper.deleteByDatasetId(deleteRequest.datasetId());
+        } else {
+            Dataset dataset = datasetMapper.findById(deleteRequest.datasetId());
+            if (dataset != null) {
+                dataset.setStatus(0);
+                datasetMapper.update(dataset);
+            }
+        }
     }
 
 }

@@ -1,10 +1,11 @@
 package com.nexfly.system.service;
 
+import com.github.pagehelper.PageInfo;
 import com.nexfly.common.core.exception.NexflyException;
-import com.nexfly.system.model.Document;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.InputStream;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -13,17 +14,38 @@ import java.util.List;
  **/
 public interface DocumentService {
 
-    List<Document> list(Long datasetId);
+    PageInfo<DocumentResponse> list(Long datasetId, Integer page, Integer pageSize);
 
     void uploadDocument(UploadRequest uploadRequest) throws NexflyException;
 
     void processDocument(AnalysisRequest analysisRequest) throws Exception;
 
+    void changeStatus(ChangeStatusRequest changeStatusRequest) throws NexflyException;
+
+    void renameDocument(RenameRequest renameRequest) throws NexflyException;
+
+    InputStream downloadDocument(Long documentId) throws NexflyException;
+
+    void delete(List<Long> documentIds);
+
     record UploadRequest(@NotNull Long datasetId, @NotNull String fileName, @NotNull String fileContentType, Long fileSize, @NotNull InputStream inputStream) {
 
     }
 
+    record DocumentResponse(Long documentId, Long orgId, Long datasetId, Long fileId, String name, Integer dataSource,
+                            String dataUrl, String processType, Integer processStatus, String parserConfig, Date createAt, Integer status, Long chuckNum) {
+
+    }
+
     record AnalysisRequest(List<Long> documentIds, Integer run) {
+
+    }
+
+    record ChangeStatusRequest(Long documentId, Integer status) {
+
+    }
+
+    record RenameRequest(Long documentId, String name) {
 
     }
 

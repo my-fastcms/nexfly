@@ -13,9 +13,19 @@ public class Dataset extends BaseModel implements Serializable {
 
     private String description;
 
-    private Long embedModelId;
+    private String embedModelId;
 
     private String vsIndexNodeId;
+
+    private String avatar;
+
+    private String language;
+
+    private String parserId;
+
+    private String parserConfig;
+
+    private Integer status;
 
     private static final long serialVersionUID = 1L;
 
@@ -51,11 +61,11 @@ public class Dataset extends BaseModel implements Serializable {
         this.description = description;
     }
 
-    public Long getEmbedModelId() {
+    public String getEmbedModelId() {
         return embedModelId;
     }
 
-    public void setEmbedModelId(Long embedModelId) {
+    public void setEmbedModelId(String embedModelId) {
         this.embedModelId = embedModelId;
     }
 
@@ -65,6 +75,54 @@ public class Dataset extends BaseModel implements Serializable {
 
     public void setVsIndexNodeId(String vsIndexNodeId) {
         this.vsIndexNodeId = vsIndexNodeId;
+    }
+
+    public String getAvatar() {
+        return avatar;
+    }
+
+    public void setAvatar(String avatar) {
+        this.avatar = avatar;
+    }
+
+    public String getLanguage() {
+        return language;
+    }
+
+    public void setLanguage(String language) {
+        this.language = language;
+    }
+
+    public String getParserId() {
+        return parserId;
+    }
+
+    public void setParserId(String parserId) {
+        this.parserId = parserId;
+    }
+
+    public String getParserConfig() {
+        return parserConfig;
+    }
+
+    public void setParserConfig(String parserConfig) {
+        this.parserConfig = parserConfig;
+    }
+
+    public Integer getStatus() {
+        return status;
+    }
+
+    public void setStatus(Integer status) {
+        this.status = status;
+    }
+
+    public String getProvider() {
+        return this.embedModelId.split("@")[0];
+    }
+
+    public String getModel() {
+        return this.embedModelId.split("@")[1];
     }
 
     @Override

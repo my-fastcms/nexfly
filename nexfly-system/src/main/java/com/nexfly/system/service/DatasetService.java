@@ -11,17 +11,28 @@ import java.util.List;
  **/
 public interface DatasetService {
 
-    Dataset getById(Long datasetId);
+    DatasetDetailResponse getById(Long datasetId);
 
     void save(Dataset dataset);
 
     List<DatasetResponse> list(Long userId);
+
+    void deleteByDatasetId(DeleteRequest deleteRequest);
 
     record DatasetResponse(Long datasetId, String name, String description, Long docNum, Long chunkNum, Date createDate, Date updateDate) {
 
     }
 
     record AppDataset(Long appId, Long datasetId) {
+
+    }
+
+    record DatasetDetailResponse(Long datasetId, Long orgId, String name, String description, String embedModelId, String vsIndexNodeId,
+                         String avatar, String language, String parserId, String parserConfig, Long docNum) {
+
+    }
+
+    record DeleteRequest(Long datasetId) {
 
     }
 

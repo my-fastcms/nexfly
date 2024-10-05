@@ -8,16 +8,21 @@
     <result column="description" property="description" />
     <result column="embed_model_id" property="embedModelId" />
     <result column="vs_index_node_id" property="vsIndexNodeId" />
+    <result column="avatar" property="avatar" />
+    <result column="language" property="language" />
+    <result column="parser_id" property="parserId" />
+    <result column="parser_config" property="parserConfig" />
+    <result column="status" property="status" />
     <result column="create_at" property="createAt" />
     <result column="create_by" property="createBy" />
     <result column="update_at" property="updateAt" />
     <result column="update_by" property="updateBy" />
   </resultMap>
   <sql id="Vo_Column_List">
-    `dataset_id`,`org_id`,`name`,`description`,`embed_model_id`,`vs_index_node_id`,`create_at`,`create_by`,`update_at`,`update_by`
+    `dataset_id`,`org_id`,`name`,`description`,`embed_model_id`,`vs_index_node_id`,`avatar`,`language`,`parser_id`,`parser_config`,`status`,`create_at`,`create_by`,`update_at`,`update_by`
   </sql>
-  <insert id="save">
-    insert into dataset (`dataset_id`,`org_id`,`name`,`description`,`embed_model_id`,`vs_index_node_id`,`create_by`,`update_by`) values (#{dataset.datasetId},#{dataset.orgId},#{dataset.name},#{dataset.description},#{dataset.embedModelId},#{dataset.vsIndexNodeId},#{dataset.createBy},#{dataset.updateBy})
+  <insert id="save" useGeneratedKeys="true" keyProperty="datasetId" keyColumn="dataset_id" parameterType="com.nexfly.system.model.Dataset">
+    insert into dataset (`dataset_id`,`org_id`,`name`,`description`,`embed_model_id`,`vs_index_node_id`,`avatar`,`language`,`parser_id`,`parser_config`,`status`,`create_by`,`update_by`) values (#{dataset.datasetId},#{dataset.orgId},#{dataset.name},#{dataset.description},#{dataset.embedModelId},#{dataset.vsIndexNodeId},#{dataset.avatar},#{dataset.language},#{dataset.parserId},#{dataset.parserConfig},#{dataset.status},#{dataset.createBy},#{dataset.updateBy})
   </insert>
   <update id="update">
     update dataset
@@ -32,10 +37,25 @@
         description = #{dataset.description,jdbcType=VARCHAR},
       </if>
       <if test="dataset.embedModelId != null">
-        embed_model_id = #{dataset.embedModelId,jdbcType=BIGINT},
+        embed_model_id = #{dataset.embedModelId,jdbcType=VARCHAR},
       </if>
       <if test="dataset.vsIndexNodeId != null">
-        vs_index_node_id = #{dataset.vsIndexNodeId,jdbcType=BIGINT},
+        vs_index_node_id = #{dataset.vsIndexNodeId,jdbcType=VARCHAR},
+      </if>
+      <if test="dataset.avatar != null">
+        avatar = #{dataset.avatar,jdbcType=VARCHAR},
+      </if>
+      <if test="dataset.language != null">
+        language = #{dataset.language,jdbcType=VARCHAR},
+      </if>
+      <if test="dataset.parserId != null">
+        parser_id = #{dataset.parserId,jdbcType=VARCHAR},
+      </if>
+      <if test="dataset.parserConfig != null">
+        parser_config = #{dataset.parserConfig,jdbcType=VARCHAR},
+      </if>
+      <if test="dataset.status != null">
+        status = #{dataset.status,jdbcType=INTEGER},
       </if>
       <if test="dataset.createAt != null">
         create_at = #{dataset.createAt,jdbcType=TIMESTAMP},
@@ -62,11 +82,15 @@
     where ad.app_id = #{appId}
   </select>
     <select id="findDatasetList" resultType="com.nexfly.system.model.Dataset">
-      select * from dataset d where d.create_by = #{userId} order by d.update_at desc;
+      select * from dataset d where d.create_by = #{userId} and status = 1 order by d.update_at desc;
     </select>
 
   <delete id="deleteAppDataset">
     delete from app_dataset where app_id = #{appId}
+  </delete>
+
+  <delete id="deleteByDatasetId">
+    delete from dataset where dataset_id = #{datasetId}
   </delete>
 
   <insert id="insertAppDatasetList">

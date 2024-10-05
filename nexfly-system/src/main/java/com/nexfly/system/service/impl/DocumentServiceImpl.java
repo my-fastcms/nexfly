@@ -1,5 +1,7 @@
 package com.nexfly.system.service.impl;
 
+import com.github.pagehelper.PageHelper;
+import com.github.pagehelper.PageInfo;
 import com.nexfly.ai.common.vectorstore.VectorStoreManager;
 import com.nexfly.common.auth.utils.AuthUtils;
 import com.nexfly.common.core.exception.NexflyException;
@@ -15,6 +17,7 @@ import com.nexfly.system.model.Document;
 import com.nexfly.system.model.DocumentSegment;
 import com.nexfly.system.service.DocumentService;
 import com.nexfly.system.service.SystemService;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.ai.embedding.EmbeddingModel;
 import org.springframework.ai.reader.tika.TikaDocumentReader;
 import org.springframework.ai.transformer.splitter.TokenTextSplitter;
@@ -60,8 +63,21 @@ public class DocumentServiceImpl implements DocumentService {
     private OssFileManager ossFileManager;
 
     @Override
-    public List<Document> list(Long datasetId) {
-        return documentMapper.findDocumentListByDatasetId(datasetId);
+    public PageInfo<DocumentResponse> list(Long datasetId, Integer page, Integer pageSize) {
+        Dataset dataset = datasetMapper.findById(datasetId);
+
+        PageInfo<Document> documentPage = PageHelper.startPage(page, pageSize).doSelectPageInfo(() -> documentMapper.findDocumentListByDatasetId(datasetId));
+        List<DocumentResponse> responseList = documentPage.getList().stream()
+                .map(document -> new DocumentResponse(document.getDocumentId(), document.getOrgId(), document.getDatasetId(), document.getFileId(), document.getName(),
+                        document.getDataSource(), document.getDataUrl(), document.getProcessType(), document.getProcessStatus(), dataset.getParserConfig(), document.getCreateAt(), document.getStatus(),
+                        documentSegmentMapper.getCountByDocumentId(document.getDocumentId())))
+                .toList();
+        PageInfo<DocumentService.DocumentResponse> responsePage = new PageInfo<>(responseList);
+        responsePage.setPageNum(documentPage.getPageNum());
+        responsePage.setPageSize(documentPage.getPageSize());
+        responsePage.setTotal(documentPage.getTotal());
+        responsePage.setPages(documentPage.getPages());
+        return responsePage;
     }
 
     @Override
@@ -90,6 +106,7 @@ public class DocumentServiceImpl implements DocumentService {
         doc.setDatasetId(dataset.getDatasetId());
         doc.setDataSource(SourceType.LOCAL.getValue());
         doc.setProcessStatus(ProcessStatus.UNSTART.getValue());
+        doc.setProcessType(ProcessType.GENERAL.value);
         documentMapper.save(doc);
     }
 
@@ -103,6 +120,13 @@ public class DocumentServiceImpl implements DocumentService {
             List<org.springframework.ai.document.Document> documents = new TikaDocumentReader(new InputStreamResource(inputStream)).get();
             var tokenTextSplitter = new TokenTextSplitter(400, 5, 200, 10000, true);
             List<org.springframework.ai.document.Document> splitDocuments = tokenTextSplitter.apply(documents);
+
+            // 插入向量数据库
+            Dataset dataset = datasetMapper.findById(doc.getDatasetId());
+            EmbeddingModel embeddingModel = modelManager.getEmbeddingModel(dataset.getDatasetId());
+            VectorStore vectorStore = vectorStoreManager.getVectorStoreFactory().getVectorStore(dataset.getVsIndexNodeId(), embeddingModel);
+            vectorStore.add(splitDocuments);
+
             List<DocumentSegment> documentSegmentList = splitDocuments.stream().map(document -> {
                 DocumentSegment documentSegment = new DocumentSegment();
                 documentSegment.setOrgId(orgId);
@@ -117,11 +141,47 @@ public class DocumentServiceImpl implements DocumentService {
                 documentSegmentMapper.insertBatch(documentSegmentList);
             }
 
-            Dataset dataset = datasetMapper.findById(doc.getDatasetId());
-            EmbeddingModel embeddingModel = modelManager.getEmbeddingModel(dataset.getEmbedModelId());
-            VectorStore vectorStore = vectorStoreManager.getVectorStoreFactory().getVectorStore(dataset.getVsIndexNodeId(), embeddingModel);
-            vectorStore.add(splitDocuments);
         }
+    }
+
+    @Override
+    public void changeStatus(ChangeStatusRequest changeStatusRequest) throws NexflyException {
+        Document document = documentMapper.findById(changeStatusRequest.documentId());
+        if (document == null) {
+            throw new NexflyException("文档不存在");
+        }
+
+        document.setStatus(changeStatusRequest.status());
+        documentMapper.update(document);
+    }
+
+    @Override
+    public void renameDocument(RenameRequest renameRequest) throws NexflyException {
+        if (StringUtils.isBlank(renameRequest.name())) {
+            throw new NexflyException("名称不能为空");
+        }
+
+        Document document = documentMapper.findById(renameRequest.documentId());
+        if (document == null) {
+            throw new NexflyException("文档不存在");
+        }
+
+        document.setName(renameRequest.name());
+        documentMapper.update(document);
+    }
+
+    @Override
+    public InputStream downloadDocument(Long documentId) throws NexflyException {
+        Document document = documentMapper.findById(documentId);
+        Attachment attachment = attachmentMapper.findById(document.getFileId());
+        return ossFileManager.download(attachment.getPath());
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void delete(List<Long> documentIds) {
+        documentSegmentMapper.deleteByDocumentIds(documentIds);
+        documentMapper.deleteByDocumentIds(documentIds);
     }
 
 }

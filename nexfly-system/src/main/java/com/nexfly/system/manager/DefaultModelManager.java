@@ -114,7 +114,7 @@ public class DefaultModelManager implements ModelManager, ApplicationContextAwar
 
     synchronized Object getEmbeddModel(Long datasetId) {
         Dataset dataset = datasetMapper.findById(datasetId);
-        ProviderModel providerModel = providerModelMapper.findById(dataset.getEmbedModelId());
+        ProviderModel providerModel = providerModelMapper.getProviderModelByOrgAndName(dataset.getOrgId(), dataset.getProvider(), dataset.getModel());
         Provider provider = getProvider(providerModel.getOrgId(), providerModel.getProviderName());
         final CreateModel createModel = new CreateModel(provider.getApiKey(), provider.getApiUrl(), providerModel.getProviderName(), providerModel.getModelName(), providerModel.getModelType());
         try {

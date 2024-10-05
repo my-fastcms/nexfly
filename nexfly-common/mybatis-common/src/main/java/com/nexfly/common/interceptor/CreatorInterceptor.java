@@ -12,7 +12,7 @@ import org.apache.ibatis.plugin.Invocation;
 import org.apache.ibatis.plugin.Signature;
 import org.springframework.stereotype.Component;
 
-import java.lang.reflect.Method;
+import java.util.List;
 import java.util.Map;
 
 @Component
@@ -32,6 +32,10 @@ public class CreatorInterceptor implements Interceptor {
             return invocation.proceed();
         }
 
+        if (AuthUtils.getUser() == null) {
+            return invocation.proceed();
+        }
+
         Object parameter = invocation.getArgs()[1];
         if (parameter == null) {
             return invocation.proceed();
@@ -41,16 +45,32 @@ public class CreatorInterceptor implements Interceptor {
             parameter = ((MapperMethod.ParamMap<?>) parameter).get(((MapperMethod.ParamMap<?>) parameter).keySet().stream().toList().get(0));
         }
         try {
-            if (AuthUtils.getUser() != null && parameter instanceof BaseModel) {
+            if (parameter instanceof BaseModel) {
+                setModelFieldValue((BaseModel) parameter);
+            } else {
+                List<BaseModel> dataList = (List<BaseModel>) parameter;
+                for (BaseModel model : dataList) {
+                    setModelFieldValue(model);
+                }
+            }
+
+            /*
+            if (AuthUtils.getUser() != null) {
                 Method method = parameter.getClass().getSuperclass().getMethod(CREATEBY_METHOD, Long.class);
                 method.invoke(parameter, AuthUtils.getUserId());
                 method = parameter.getClass().getSuperclass().getMethod(UPDATEBY_METHOD, Long.class);
                 method.invoke(parameter, AuthUtils.getUserId());
             }
+            */
             return invocation.proceed();
         } catch (Exception e) {
             return invocation.proceed();
         }
+    }
+
+    void setModelFieldValue(BaseModel model) {
+        model.setCreateBy(AuthUtils.getUserId());
+        model.setUpdateBy(AuthUtils.getUserId());
     }
 
 }

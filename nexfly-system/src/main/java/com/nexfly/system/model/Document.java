@@ -27,6 +27,8 @@ public class Document extends BaseModel implements Serializable {
 
     private Integer processStatus;
 
+    private Integer status;
+
     private static final long serialVersionUID = 1L;
 
     public Long getDocumentId() {
@@ -115,6 +117,14 @@ public class Document extends BaseModel implements Serializable {
 
     public void setProcessStatus(Integer processStatus) {
         this.processStatus = processStatus;
+    }
+
+    public Integer getStatus() {
+        return status;
+    }
+
+    public void setStatus(Integer status) {
+        this.status = status;
     }
 
     @Override

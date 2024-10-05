@@ -16,4 +16,6 @@ public interface DocumentMapper {
 
     Long getCountByDatasetId(@Param("datasetId") Long datasetId);
 
+    void deleteByDocumentIds(@Param("documentIds") List<Long> documentIds);
+
 }
