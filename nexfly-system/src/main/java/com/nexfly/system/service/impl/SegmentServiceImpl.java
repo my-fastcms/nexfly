@@ -6,6 +6,7 @@ import com.nexfly.system.service.SegmentService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -21,6 +22,11 @@ public class SegmentServiceImpl implements SegmentService {
     @Override
     public List<DocumentSegment> list(SegmentListRequest segmentListRequest) {
         return documentSegmentMapper.getListByDocumentId(segmentListRequest.documentId());
+    }
+
+    @Override
+    public RetrievalTestResponse retrievalTest(RetrievalTestRequest retrievalTestRequest) {
+        return new RetrievalTestResponse(new ArrayList<>(), new ArrayList<>(), 10);
     }
 
 }

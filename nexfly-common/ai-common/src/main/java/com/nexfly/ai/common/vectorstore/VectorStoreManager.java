@@ -35,10 +35,7 @@ public class VectorStoreManager implements InitializingBean {
         if (vectorStoreType.equals("weaviate")) {
             return vectorStoreFactoryMap.get(WEAVIATE_FACTORY);
         }
-        if (vectorStoreType.equals("elasticsearch")) {
-            return vectorStoreFactoryMap.get(ELASTICSEARCH_FACTORY);
-        }
-        return vectorStoreFactoryMap.get(WEAVIATE_FACTORY);
+        return vectorStoreFactoryMap.get(ELASTICSEARCH_FACTORY);
     }
 
 }

@@ -152,6 +152,10 @@ public class TongYiChatOptions implements FunctionCallingOptions, ChatOptions {
 	private Map<String, String> httpHeaders = new HashMap<>();
 	// @formatter:on
 
+	@NestedConfigurationProperty
+	@JsonIgnore
+	private Map<String, Object> toolContext;
+
 	public static Builder builder() {
 		return new Builder();
 	}
@@ -283,6 +287,16 @@ public class TongYiChatOptions implements FunctionCallingOptions, ChatOptions {
 		public Builder withHttpHeaders(Map<String, String> httpHeaders) {
 			Assert.notNull(httpHeaders, "HTTP headers must not be null");
 			this.options.httpHeaders = httpHeaders;
+			return this;
+		}
+
+		public Builder withToolContext(Map<String, Object> toolContext) {
+			if (this.options.toolContext == null) {
+				this.options.toolContext = toolContext;
+			}
+			else {
+				this.options.toolContext.putAll(toolContext);
+			}
 			return this;
 		}
 
@@ -495,6 +509,16 @@ public class TongYiChatOptions implements FunctionCallingOptions, ChatOptions {
 	}
 
 	@Override
+	public Map<String, Object> getToolContext() {
+		return this.toolContext;
+	}
+
+	@Override
+	public void setToolContext(Map<String, Object> toolContext) {
+		this.toolContext = toolContext;
+	}
+
+	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
@@ -668,6 +692,7 @@ public class TongYiChatOptions implements FunctionCallingOptions, ChatOptions {
 			.withFunctionCallbacks(fromOptions.getFunctionCallbacks())
 			.withFunctions(fromOptions.getFunctions())
 			.withHttpHeaders(fromOptions.getHttpHeaders())
+			.withToolContext(fromOptions.getToolContext())
 			.build();
 	}
 

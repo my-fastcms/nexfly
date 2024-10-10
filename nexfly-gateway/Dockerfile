@@ -1,8 +1,8 @@
 FROM alibabadragonwell/dragonwell:17-anolis
 
-WORKDIR /kite-gateway
+WORKDIR /nexfly-gateway
 
-ARG JAR_FILE=target/kite-gateway.jar
+ARG JAR_FILE=target/nexfly-gateway-0.0.1-SNAPSHOT.jar
 
 COPY ${JAR_FILE} app.jar
 

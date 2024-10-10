@@ -21,6 +21,7 @@
         <module>email-common</module>
         <module>ai-common</module>
         <module>oss-common</module>
+        <module>rocketmq-common</module>
     </modules>
 
     <dependencies>

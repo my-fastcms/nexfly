@@ -44,7 +44,7 @@ public class ElasticsearchVectorStoreFactory implements VectorStoreFactory {
 
     @Override
     public VectorStore getVectorStore(EmbeddingModel embeddingModel) throws Exception {
-        return getVectorStore("index_dot_product", embeddingModel);
+        return getVectorStore("index_dot_nexfly", embeddingModel);
     }
 
 }
