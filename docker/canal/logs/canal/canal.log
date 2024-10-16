@@ -1,9 +1,0 @@
-2024-10-16 08:57:05.957 [Thread-9] INFO  c.a.o.c.c.rocketmq.producer.CanalRocketMQProducer - ## Stop RocketMQ producer##
-2024-10-16 08:57:05.957 [Thread-8] INFO  com.alibaba.otter.canal.deployer.CanalStarter - ## stop the canal server
-2024-10-16 08:57:12.919 [Thread-8] INFO  com.alibaba.otter.canal.deployer.CanalController - ## stop the canal server[172.20.0.3(172.20.0.3):11111]
-2024-10-16 09:02:40.391 [main] INFO  com.alibaba.otter.canal.deployer.CanalLauncher - ## set default uncaught exception handler
-2024-10-16 09:02:40.406 [main] INFO  com.alibaba.otter.canal.deployer.CanalLauncher - ## load canal configurations
-2024-10-16 09:02:40.495 [main] INFO  c.a.o.c.c.rocketmq.producer.CanalRocketMQProducer - ##Start RocketMQ producer##
-2024-10-16 09:02:40.639 [main] INFO  com.alibaba.otter.canal.deployer.CanalStarter - ## start the canal server.
-2024-10-16 09:02:40.673 [main] INFO  com.alibaba.otter.canal.deployer.CanalController - ## start the canal server[172.20.0.3(172.20.0.3):11111]
-2024-10-16 09:02:41.735 [main] INFO  com.alibaba.otter.canal.deployer.CanalStarter - ## the canal server is running now ......
