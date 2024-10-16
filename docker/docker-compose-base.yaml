@@ -18,7 +18,7 @@ services:
     ports:
       - ${MYSQL_PORT}:3306
     volumes:
-      - mysql_data:/var/lib/mysql
+      - nf_mysql_data:/var/lib/mysql
       - ./mysql/conf.d:/etc/mysql/conf.d
       - ./mysql/initdb:/docker-entrypoint-initdb.d
     networks:
@@ -39,7 +39,7 @@ services:
       - ${MINIO_PORT}:9000
       - ${MINIO_CONSOLE_PORT}:9001
     volumes:
-      - minio_data:/data
+      - nf_minio_data:/data
     networks:
       - nexfly
     environment:
@@ -55,7 +55,7 @@ services:
     ports:
       - ${REDIS_PORT}:6379
     volumes:
-      - redis_data:/data
+      - nf_redis_data:/data
     networks:
       - nexfly
     restart: always
@@ -69,6 +69,8 @@ services:
         condition: service_healthy
     ports:
       - 8848:8848
+      - 9848:9848
+      - 9849:9849
     expose:
       - 8848
       - 9848
@@ -122,8 +124,9 @@ services:
     container_name: nexfly-elasticsearch-01
     image: elasticsearch:${ES_VERSION}
     volumes:
-      - esdata01:/usr/share/elasticsearch/data
+      - nf_esdata01:/usr/share/elasticsearch/data
       - ./elasticsearch/config/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml
+      - ./elasticsearch/plugins:/usr/share/elasticsearch/plugins
     ports:
       - ${ES_PORT}:9200
 #    depends_on:
@@ -170,17 +173,17 @@ services:
       - nexfly
 
   nexfly-canal:
-    image: canal/canal-server:v1.1.6
+    image: canal/canal-server:v1.1.7
     container_name: nexfly-canal
     restart: always
     networks:
       - nexfly
     expose:
       - 11111
-    depends_on:
-      - nexfly-mysql
-      - nexfly-elasticsearch
-      - nexfly-rocketmq-namesrv
+#    depends_on:
+#      - nexfly-mysql
+#      - nexfly-elasticsearch
+#      - nexfly-rocketmq-namesrv
     volumes:
       - ./canal/conf/example:/home/admin/canal-server/conf/example
       - ./canal/conf/canal.properties:/home/admin/canal-server/conf/canal.properties
@@ -192,11 +195,11 @@ services:
     restart: always
     networks:
       - nexfly
-    expose:
-      - 9876
+    ports:
+      - 9876:9876
     volumes:
       - ./rocketmq/namesrv/logs:/home/rocketmq/logs
-      - mq_namesrv_store:/home/rocketmq/store
+      - nf_namesrv:/home/rocketmq/store
     environment:
       JAVA_OPT_EXT: "-Duser.home=/home/rocketmq -Xms512M -Xmx512M -Xmn128M"
     command: ["sh","mqnamesrv"]
@@ -207,18 +210,20 @@ services:
     restart: always
     networks:
       - nexfly
-    expose:
-      - 10909
-      - 10911
+    ports:
+      - 10909:10909
+      - 10911:10911
+      - 10912:10912
     volumes:
       - ./rocketmq/broker/logs:/home/rocketmq/logs
-      - ./rocketmq/broker/store:/home/rocketmq/store
+      - nf_broker:/home/rocketmq/store
       - ./rocketmq/broker/conf/broker.conf:/etc/rocketmq/broker.conf
     environment:
       JAVA_OPT_EXT: "-Duser.home=/home/rocketmq -Xms512M -Xmx512M -Xmn128M -XX:-AssumeMP"
-    command: ["sh","mqbroker","-c","/etc/rocketmq/broker.conf","-n","nexfly-rocketmq-namesrv:9876","autoCreateTopicEnable=true"]
+    command: ["sh","mqbroker","-c","/etc/rocketmq/broker.conf","-n","nexfly-rocketmq-namesrv:9876","autoCreateTopicEnable=false"]
     depends_on:
       - nexfly-rocketmq-namesrv
+    user: root
 
   nexfly-rocketmq-dashboard:
     image: apacherocketmq/rocketmq-dashboard:1.0.0
@@ -234,17 +239,17 @@ services:
       - nexfly
 
 volumes:
-  esdata01:
+  nf_esdata01:
     driver: local
-  mysql_data:
+  nf_mysql_data:
     driver: local
-  minio_data:
+  nf_minio_data:
     driver: local
-  redis_data:
+  nf_redis_data:
     driver: local
-  mq_namesrv_store:
+  nf_namesrv:
     driver: local
-  mq_broker_store:
+  nf_broker:
     driver: local
 
 networks:

@@ -207,5 +207,12 @@
             <artifactId>spring-ai-spring-cloud-bindings</artifactId>
         </dependency>
 
+        <!--
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-elasticsearch</artifactId>
+        </dependency>
+        -->
+
     </dependencies>
 </project>

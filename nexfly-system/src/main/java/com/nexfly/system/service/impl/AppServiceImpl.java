@@ -111,6 +111,9 @@ public class AppServiceImpl implements AppService {
         appConfig.setEmptyResponse(promptConfig.getEmptyResponse());
         appConfig.setPrologue(promptConfig.getPrologue());
         appConfig.setQuote(promptConfig.getQuote());
+        appConfig.setSimilarityThreshold(appParam.getSimilarityThreshold());
+        appConfig.setTopN(appParam.getTopN());
+        appConfig.setVectorSimilarityWeight(appParam.getVectorSimilarityWeight());
 
         saveOrUpdateAppConfig(appConfig);
 
@@ -199,6 +202,9 @@ public class AppServiceImpl implements AppService {
         appEditResponse.setDescription(app.getDescription());
         appEditResponse.setIcon(app.getIcon());
         AppConfig appConfig = appConfigMapper.findByAppId(app.getAppId());
+        appEditResponse.setSimilarityThreshold(appConfig.getSimilarityThreshold());
+        appEditResponse.setVectorSimilarityWeight(appConfig.getVectorSimilarityWeight());
+        appEditResponse.setTopN(appConfig.getTopN());
         AppSaveRequest.PromptConfig promptConfig = new AppSaveRequest.PromptConfig();
         promptConfig.setSystem(appConfig.getPrePrompt());
         List<AppSaveRequest.Parameter> parameters = JSONArray.parseArray(appConfig.getFormVariable(), AppSaveRequest.Parameter.class);
@@ -256,8 +262,8 @@ public class AppServiceImpl implements AppService {
         requestResponseAdvisorList.add(new PromptChatMemoryAdvisor(new NexflyChatMemory(AuthUtils.getUserId(), app.getAppId(), appMessageMapper)));
         for (Dataset dataset : datasetList) {
             EmbeddingModel embeddingModel = modelManager.getEmbeddingModel(dataset.getDatasetId());
-            var qaAdvisor = new QuestionAnswerAdvisor(vectorStoreManager.getVectorStoreFactory().getVectorStore(dataset.getVsIndexNodeId(), embeddingModel),
-                    SearchRequest.defaults().withSimilarityThreshold(0.65).withTopK(6), system);
+            var qaAdvisor = new QuestionAnswerAdvisor(vectorStoreManager.getVectorStoreFactory().getVectorStore(embeddingModel),
+                    SearchRequest.defaults().withSimilarityThreshold(appConfig.getSimilarityThreshold()).withTopK(appConfig.getTopN()), system);
             requestResponseAdvisorList.add(qaAdvisor);
         }
 

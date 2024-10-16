@@ -1,0 +1,267 @@
+include:
+  - env_file: ./.env
+
+services:
+  nexfly-mysql:
+    image: mysql:8.0
+    container_name: nexfly-mysql
+    environment:
+      - MYSQL_USER=${MYSQL_USER}
+      - MYSQL_ROOT_PASSWORD=${MYSQL_PASSWORD}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+      - TZ=${TIMEZONE}
+    command:
+      --max_connections=1000
+      --character-set-server=utf8mb4
+      --collation-server=utf8mb4_general_ci
+      --default-authentication-plugin=mysql_native_password
+    ports:
+      - ${MYSQL_PORT}:3306
+    volumes:
+      - nf_mysql_data:/var/lib/mysql
+      - ./mysql/conf.d:/etc/mysql/conf.d
+      - ./mysql/initdb:/docker-entrypoint-initdb.d
+    networks:
+      - nexfly
+    restart: always
+    healthcheck:
+      test: [ "CMD-SHELL", "mysqladmin ping -h localhost -p${MYSQL_ROOT_PASSWORD} || exit 1" ]
+      interval: 30s      # 每隔30秒进行一次健康检查
+      timeout: 10s       # 每次健康检查的超时时间为10秒
+      retries: 5         # 重试5次后，如果失败就认为容器不健康
+      start_period: 40s  # 容器启动后的40秒内不进行健康检查
+
+  nexfly-minio:
+    image: minio/minio:RELEASE.2023-12-20T01-00-02Z
+    container_name: nexfly-minio
+    command: server --console-address ":9001" /data
+    ports:
+      - ${MINIO_PORT}:9000
+      - ${MINIO_CONSOLE_PORT}:9001
+    volumes:
+      - nf_minio_data:/data
+    networks:
+      - nexfly
+    environment:
+      - MINIO_ROOT_USER=${MINIO_USER}
+      - MINIO_ROOT_PASSWORD=${MINIO_PASSWORD}
+      - TZ=${TIMEZONE}
+    restart: always
+
+  nexfly-redis:
+    image: redis:7.2.4
+    container_name: nexfly-redis
+    command: redis-server --requirepass ${REDIS_PASSWORD} --maxmemory 128mb --maxmemory-policy allkeys-lru
+    ports:
+      - ${REDIS_PORT}:6378
+    volumes:
+      - nf_redis_data:/data
+    networks:
+      - nexfly
+    restart: always
+
+  nexfly-nacos:
+    image: nacos/nacos-server:v2.4.2
+    container_name: nexfly-nacos
+    restart: always
+    depends_on:
+      nexfly-mysql:
+        condition: service_healthy
+    ports:
+      - 8848:8848
+      - 9848:9848
+      - 9849:9849
+    expose:
+      - 8848
+      - 9848
+      - 9849
+    networks:
+      - nexfly
+    environment:
+      - JVM_XMS=512m
+      - JVM_XMX=512m
+      - LOG_LEVEL=ERROR
+      - MODE=standalone
+      - SPRING_DATASOURCE_PLATFORM=mysql
+      - MYSQL_SERVICE_HOST=nexfly-mysql
+      - MYSQL_SERVICE_DB_NAME=nexfly_nacos
+      - MYSQL_SERVICE_USER=root
+      - MYSQL_SERVICE_PASSWORD=${MYSQL_PASSWORD}
+      - MYSQL_SERVICE_PORT=3306
+      - NACOS_AUTH_ENABLE=true
+      - NACOS_AUTH_TOKEN=${NACOS_SECRET_KEY}
+      - NACOS_AUTH_IDENTITY_KEY=${NACOS_USERNAME}
+      - NACOS_AUTH_IDENTITY_VALUE=${NACOS_PASSWORD}
+#    volumes:
+#      - ./nacos/logs:/home/nacos/logs
+    healthcheck:
+      test: [ "CMD-SHELL", "curl -f http://localhost:8848/nacos/v1/console/health/readiness || exit 1" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+#  nexfly-seata:
+#    image: seataio/seata-server:1.6.1
+#    container_name: nexfly-seata
+#    restart: always
+#    depends_on:
+#      nexfly-mysql:
+#        condition: service_healthy
+#      nexfly-nacos:
+#        condition: service_healthy
+#    networks:
+#      - nexfly
+#    expose:
+#      - 8091
+#      - 7091
+#    environment:
+#      - SEATA_IP=127.0.0.1
+#    volumes:
+#      - ./seata/application.yml:/seata-server/resources/application.yml
+
+  nexfly-elasticsearch:
+    container_name: nexfly-elasticsearch-01
+    image: elasticsearch:${ES_VERSION}
+    volumes:
+      - nf_esdata01:/usr/share/elasticsearch/data
+      - ./elasticsearch/config/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml
+      - ./elasticsearch/plugins:/usr/share/elasticsearch/plugins
+    ports:
+      - ${ES_PORT}:9200
+#    depends_on:
+#      nexfly-mysql:
+#        condition: service_healthy
+    environment:
+      - ES_JAVA_OPTS=-Xms512m -Xmx512m
+      - node.name=nexfly-elasticsearch
+      - ELASTIC_PASSWORD=${ELASTIC_PASSWORD}
+      - bootstrap.memory_lock=false
+      - discovery.type=single-node
+      - xpack.security.enabled=true
+      - xpack.security.http.ssl.enabled=false
+      - xpack.security.transport.ssl.enabled=false
+      - TZ=${TIMEZONE}
+    mem_limit: ${MEM_LIMIT}
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    healthcheck:
+      test: ["CMD-SHELL", "curl http://localhost:9200"]
+      interval: 10s
+      timeout: 10s
+      retries: 120
+    networks:
+      - nexfly
+    restart: always
+
+  nexfly-kibana:
+    image: kibana:${ES_VERSION}
+    container_name: nexfly-kibana
+    restart: always
+    environment:
+      ELASTICSEARCH_USERNAME: ${KIBANA_USER}
+      ELASTICSEARCH_PASSWORD: ${KIBANA_PASSWORD}
+      ELASTICSEARCH_HOSTS: "http://nexfly-elasticsearch:9200"
+      TZ: ${TIMEZONE}
+    ports:
+      - ${KIBANA_PORT}:5601
+    depends_on:
+      nexfly-elasticsearch:
+        condition: service_healthy
+    networks:
+      - nexfly
+
+  nexfly-canal:
+    image: canal/canal-server:v1.1.7
+    container_name: nexfly-canal
+    restart: always
+    networks:
+      - nexfly
+    expose:
+      - 11111
+    environment:
+      - TZ=${TIMEZONE}
+#    depends_on:
+#      - nexfly-mysql
+#      - nexfly-elasticsearch
+#      - nexfly-rocketmq-namesrv
+    volumes:
+      - ./canal/conf/example:/home/admin/canal-server/conf/example
+      - ./canal/conf/canal.properties:/home/admin/canal-server/conf/canal.properties
+      - ./canal/logs:/home/admin/canal-server/logs
+    privileged: true
+    user: root
+
+  nexfly-rocketmq-namesrv:
+    image: apache/rocketmq:${ROCKET_MQ_VERSION}
+    container_name: nexfly-rocketmq-namesrv
+    restart: always
+    networks:
+      - nexfly
+    ports:
+      - 9876:9876
+    volumes:
+      - ./rocketmq/namesrv/logs:/home/rocketmq/logs
+      - nf_namesrv:/home/rocketmq/store:rw
+    environment:
+      JAVA_OPT_EXT: "-Duser.home=/home/rocketmq -Xms512M -Xmx512M -Xmn128M"
+      TZ: ${TIMEZONE}
+    command: ["sh","mqnamesrv"]
+    user: root
+
+  nexfly-rocketmq-broker:
+    image: apache/rocketmq:${ROCKET_MQ_VERSION}
+    container_name: nexfly-rocketmq-broker
+    restart: always
+    networks:
+      - nexfly
+    ports:
+      - 10909:10909
+      - 10911:10911
+      - 10912:10912
+    volumes:
+      - ./rocketmq/broker/logs:/home/rocketmq/logs
+      - nf_broker:/home/rocketmq/store:rw
+      - ./rocketmq/broker/conf/broker.conf:/etc/rocketmq/broker.conf
+    environment:
+      JAVA_OPT_EXT: "-Duser.home=/home/rocketmq -Xms512M -Xmx512M -Xmn128M -XX:-AssumeMP"
+      TZ: ${TIMEZONE}
+    command: ["sh","mqbroker","-c","/etc/rocketmq/broker.conf","-n","nexfly-rocketmq-namesrv:9876","autoCreateTopicEnable=true"]
+    depends_on:
+      - nexfly-rocketmq-namesrv
+    user: root
+
+  nexfly-rocketmq-dashboard:
+    image: apacherocketmq/rocketmq-dashboard:1.0.0
+    container_name: nexfly-rocketmq-dashboard
+    restart: always
+    ports:
+      - 8180:8080
+    environment:
+      - JAVA_OPTS=-Drocketmq.namesrv.addr=nexfly-rocketmq-namesrv:9876 -Dcom.rocketmq.sendMessageWithVIPChannel=false
+      - TZ=${TIMEZONE}
+    depends_on:
+      - nexfly-rocketmq-namesrv
+    networks:
+      - nexfly
+
+volumes:
+  nf_esdata01:
+    driver: local
+  nf_mysql_data:
+    driver: local
+  nf_minio_data:
+    driver: local
+  nf_redis_data:
+    driver: local
+  nf_namesrv:
+    driver: local
+  nf_broker:
+    driver: local
+
+networks:
+  nexfly:
+    driver: bridge
+

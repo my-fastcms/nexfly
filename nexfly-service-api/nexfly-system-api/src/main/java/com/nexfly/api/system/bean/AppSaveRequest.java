@@ -7,7 +7,6 @@ import java.util.List;
  * @Date 2024/9/23
  **/
 public class AppSaveRequest {
-
     Long appId;
     String description;
     String name;
@@ -16,10 +15,14 @@ public class AppSaveRequest {
     String modelId;
     ModelConfig modelConfig;
     String rerankModelId;
-
     String ttsModelId;
+    PromptConfig promptConfig;
 
-    private PromptConfig promptConfig;
+    Float similarityThreshold;
+
+    Integer topN;
+
+    Float vectorSimilarityWeight;
 
     public Long getAppId() {
         return appId;
@@ -99,6 +102,30 @@ public class AppSaveRequest {
 
     public void setTtsModelId(String ttsModelId) {
         this.ttsModelId = ttsModelId;
+    }
+
+    public Float getSimilarityThreshold() {
+        return similarityThreshold;
+    }
+
+    public void setSimilarityThreshold(Float similarityThreshold) {
+        this.similarityThreshold = similarityThreshold;
+    }
+
+    public Integer getTopN() {
+        return topN;
+    }
+
+    public void setTopN(Integer topN) {
+        this.topN = topN;
+    }
+
+    public Float getVectorSimilarityWeight() {
+        return vectorSimilarityWeight;
+    }
+
+    public void setVectorSimilarityWeight(Float vectorSimilarityWeight) {
+        this.vectorSimilarityWeight = vectorSimilarityWeight;
     }
 
     public static class ModelConfig {

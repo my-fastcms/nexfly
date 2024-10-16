@@ -13,16 +13,19 @@
     <result column="file_upload" property="fileUpload" />
     <result column="text_to_speech" property="textToSpeech" />
     <result column="speech_to_text" property="speechToText" />
+    <result column="similarity_threshold" property="similarityThreshold" />
+    <result column="top_n" property="topN" />
+    <result column="vector_similarity_weight" property="vectorSimilarityWeight" />
     <result column="create_at" property="createAt" />
     <result column="create_by" property="createBy" />
     <result column="update_at" property="updateAt" />
     <result column="update_by" property="updateBy" />
   </resultMap>
   <sql id="Vo_Column_List">
-    `config_id`,`app_id`,`org_id`,`create_at`,`create_by`,`update_at`,`update_by`,`pre_prompt`,`form_variable`,`empty_response`,`prologue`,`quote`,`file_upload`,`text_to_speech`,`speech_to_text`
+    `config_id`,`app_id`,`org_id`,`create_at`,`create_by`,`update_at`,`update_by`,`pre_prompt`,`form_variable`,`empty_response`,`prologue`,`quote`,`file_upload`,`text_to_speech`,`speech_to_text`,`similarity_threshold`,`top_n`,`vector_similarity_weight`
   </sql>
   <insert id="save">
-    insert into app_config (`config_id`,`app_id`,`org_id`,`create_by`,`update_by`,`pre_prompt`,`form_variable`,`empty_response`,`prologue`,`quote`,`file_upload`,`text_to_speech`,`speech_to_text`) values (#{appConfig.configId},#{appConfig.appId},#{appConfig.orgId},#{appConfig.createBy},#{appConfig.updateBy},#{appConfig.prePrompt},#{appConfig.formVariable},#{appConfig.emptyResponse},#{appConfig.prologue},#{appConfig.quote},#{appConfig.fileUpload},#{appConfig.textToSpeech},#{appConfig.speechToText})
+    insert into app_config (`config_id`,`app_id`,`org_id`,`create_by`,`update_by`,`pre_prompt`,`form_variable`,`empty_response`,`prologue`,`quote`,`file_upload`,`text_to_speech`,`speech_to_text`,`similarity_threshold`,`top_n`,`vector_similarity_weight`) values (#{appConfig.configId},#{appConfig.appId},#{appConfig.orgId},#{appConfig.createBy},#{appConfig.updateBy},#{appConfig.prePrompt},#{appConfig.formVariable},#{appConfig.emptyResponse},#{appConfig.prologue},#{appConfig.quote},#{appConfig.fileUpload},#{appConfig.textToSpeech},#{appConfig.speechToText},#{appConfig.similarityThreshold},#{appConfig.topN},#{appConfig.similarityThreshold})
   </insert>
   <update id="update">
     update app_config
@@ -56,6 +59,15 @@
       </if>
       <if test="appConfig.speechToText != null">
         speech_to_text = #{appConfig.speechToText,jdbcType=VARCHAR},
+      </if>
+      <if test="appConfig.similarityThreshold != null">
+        similarity_threshold = #{appConfig.similarityThreshold,jdbcType=FLOAT},
+      </if>
+      <if test="appConfig.topN != null">
+        top_n = #{appConfig.topN,jdbcType=INTEGER},
+      </if>
+      <if test="appConfig.vectorSimilarityWeight != null">
+        vector_similarity_weight = #{appConfig.vectorSimilarityWeight,jdbcType=FLOAT},
       </if>
       <if test="appConfig.createAt != null">
         create_at = #{appConfig.createAt,jdbcType=TIMESTAMP},

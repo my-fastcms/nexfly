@@ -41,8 +41,13 @@
         </dependency>
         <dependency>
             <groupId>com.nexfly</groupId>
+            <artifactId>rocketmq-common</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.nexfly</groupId>
             <artifactId>nexfly-system-api</artifactId>
         </dependency>
+
     </dependencies>
 
     <build>

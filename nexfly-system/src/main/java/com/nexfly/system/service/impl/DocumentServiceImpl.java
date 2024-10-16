@@ -4,6 +4,7 @@ import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.nexfly.ai.common.vectorstore.VectorStoreManager;
 import com.nexfly.common.auth.utils.AuthUtils;
+import com.nexfly.common.core.constants.NexflyConstants;
 import com.nexfly.common.core.exception.NexflyException;
 import com.nexfly.oss.common.OssFileManager;
 import com.nexfly.system.manager.ModelManager;
@@ -106,7 +107,8 @@ public class DocumentServiceImpl implements DocumentService {
         doc.setDatasetId(dataset.getDatasetId());
         doc.setDataSource(SourceType.LOCAL.getValue());
         doc.setProcessStatus(ProcessStatus.UNSTART.getValue());
-        doc.setProcessType(ProcessType.GENERAL.value);
+        doc.setProcessType(ProcessType.GENERAL.getValue());
+        doc.setStatus(NexflyConstants.Status.NORMAL.getValue());
         documentMapper.save(doc);
     }
 
@@ -114,6 +116,8 @@ public class DocumentServiceImpl implements DocumentService {
     public void processDocument(AnalysisRequest analysisRequest) throws Exception {
         Long orgId = systemService.getOrgId(AuthUtils.getUserId());
         for (Long documentId : analysisRequest.documentIds()) {
+
+            // 从minio下载文件并进行分割
             Document doc = documentMapper.findById(documentId);
             Attachment attachment = attachmentMapper.findById(doc.getFileId());
             InputStream inputStream = ossFileManager.download(attachment.getPath());
@@ -124,7 +128,7 @@ public class DocumentServiceImpl implements DocumentService {
             // 插入向量数据库
             Dataset dataset = datasetMapper.findById(doc.getDatasetId());
             EmbeddingModel embeddingModel = modelManager.getEmbeddingModel(dataset.getDatasetId());
-            VectorStore vectorStore = vectorStoreManager.getVectorStoreFactory().getVectorStore(dataset.getVsIndexNodeId(), embeddingModel);
+            VectorStore vectorStore = vectorStoreManager.getVectorStoreFactory().getVectorStore(embeddingModel);
             vectorStore.add(splitDocuments);
 
             List<DocumentSegment> documentSegmentList = splitDocuments.stream().map(document -> {
@@ -141,6 +145,8 @@ public class DocumentServiceImpl implements DocumentService {
                 documentSegmentMapper.insertBatch(documentSegmentList);
             }
 
+            doc.setStatus(ProcessStatus.DONE.value);
+            documentMapper.update(doc);
         }
     }
 

@@ -203,6 +203,12 @@
 
             <dependency>
                 <groupId>com.nexfly</groupId>
+                <artifactId>rocketmq-common</artifactId>
+                <version>${revision}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.nexfly</groupId>
                 <artifactId>nexfly-system-api</artifactId>
                 <version>${revision}</version>
             </dependency>

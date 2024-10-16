@@ -26,6 +26,12 @@ public class AppConfig extends BaseModel implements Serializable {
 
     private String speechToText;
 
+    private Float similarityThreshold = 0.54f;
+
+    private Integer topN = 6;
+
+    private Float vectorSimilarityWeight;
+
     private static final long serialVersionUID = 1L;
 
     public Long getConfigId() {
@@ -114,6 +120,30 @@ public class AppConfig extends BaseModel implements Serializable {
 
     public void setSpeechToText(String speechToText) {
         this.speechToText = speechToText;
+    }
+
+    public Float getSimilarityThreshold() {
+        return similarityThreshold;
+    }
+
+    public void setSimilarityThreshold(Float similarityThreshold) {
+        this.similarityThreshold = similarityThreshold;
+    }
+
+    public Integer getTopN() {
+        return topN;
+    }
+
+    public void setTopN(Integer topN) {
+        this.topN = topN;
+    }
+
+    public Float getVectorSimilarityWeight() {
+        return vectorSimilarityWeight;
+    }
+
+    public void setVectorSimilarityWeight(Float vectorSimilarityWeight) {
+        this.vectorSimilarityWeight = vectorSimilarityWeight;
     }
 
     @Override
