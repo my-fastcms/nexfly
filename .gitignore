@@ -27,6 +27,7 @@ build/
 !**/src/test/**/build/
 /.dist/
 /logs/
+*/**/logs/
 
 ### VS Code ###
 .vscode/
