@@ -11,9 +11,17 @@ import java.util.List;
  **/
 public interface SegmentService {
 
+    DocumentSegment getById(Long segmentId);
+
     List<DocumentSegment> list(SegmentListRequest segmentListRequest);
 
     RetrievalTestResponse retrievalTest(RetrievalTestRequest retrievalTestRequest);
+
+    void update(UpdateSegmentRequest updateSegmentRequest);
+
+    void delete(DeleteSegmentRequest deleteSegmentRequest);
+
+    void switchEnable(SwitchEnableRequest switchEnableRequest);
 
     record SegmentListRequest(Long documentId, Integer page, @DefaultValue("10") Integer pageSize) {
 
@@ -23,7 +31,19 @@ public interface SegmentService {
 
     }
 
-    record RetrievalTestResponse(List<Object> chunks, List<Object> doc_aggs, Integer total) {
+    record RetrievalTestResponse(List<Object> chunks, List<Object> documents, Integer total) {
+
+    }
+
+    record UpdateSegmentRequest(Long documentId, Long segmentId, String content, String keywords) {
+
+    }
+
+    record SwitchEnableRequest(Long documentId, List<Long> segmentIds, Integer status) {
+
+    }
+
+    record DeleteSegmentRequest(Long documentId, List<Long> segmentIds) {
 
     }
 

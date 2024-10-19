@@ -16,7 +16,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.InputStream;
 import java.net.URLEncoder;
-import java.util.List;
 import java.util.Objects;
 
 @RestController
@@ -71,8 +70,8 @@ public class DocumentController {
     }
 
     @PostMapping("delete")
-    public RestResult<Boolean> delete(@RequestBody List<Long> documentIds) {
-        documentService.delete(documentIds);
+    public RestResult<Boolean> delete(@RequestBody DocumentService.DeleteDocumentRequest deleteDocumentRequest) {
+        documentService.delete(deleteDocumentRequest);
         return RestResultUtils.success(true);
     }
 

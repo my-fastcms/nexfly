@@ -4,7 +4,6 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.springframework.ai.retry.RetryUtils;
-import org.springframework.ai.util.api.ApiUtils;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -21,6 +20,7 @@ import reactor.core.publisher.Mono;
 
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
 
 public class TongYiAiAudioApi {
 	private final RestClient restClient;
@@ -45,13 +45,11 @@ public class TongYiAiAudioApi {
 	public TongYiAiAudioApi(String baseUrl, String tongYiToken, RestClient.Builder restClientBuilder,
 							ResponseErrorHandler responseErrorHandler) {
 
-		this.restClient = restClientBuilder.baseUrl(baseUrl).defaultHeaders(headers -> {
-			headers.setBearerAuth(tongYiToken);
-		}).defaultStatusHandler(responseErrorHandler).build();
+		Consumer<HttpHeaders> authHeaders = h -> h.setBearerAuth(tongYiToken);
 
-		this.webClient = WebClient.builder().baseUrl(baseUrl).defaultHeaders(headers -> {
-			headers.setBearerAuth(tongYiToken);
-		}).defaultHeaders(ApiUtils.getJsonContentHeaders(tongYiToken)).build();
+		this.restClient = restClientBuilder.baseUrl(baseUrl).defaultHeaders(authHeaders).defaultStatusHandler(responseErrorHandler).build();
+
+		this.webClient = WebClient.builder().baseUrl(baseUrl).defaultHeaders(authHeaders).build();
 	}
 
 	/**
@@ -82,22 +80,21 @@ public class TongYiAiAudioApi {
 							RestClient.Builder restClientBuilder, WebClient.Builder webClientBuilder,
 							ResponseErrorHandler responseErrorHandler) {
 
+		Consumer<HttpHeaders> authHeaders = h -> {
+			h.setBearerAuth(apiKey);
+			h.addAll(headers);
+			// h.setContentType(MediaType.APPLICATION_JSON);
+		};
+
 		// @formatter:off
 		this.restClient = restClientBuilder
 			.baseUrl(baseUrl)
-			.defaultHeaders(h -> {
-				h.setBearerAuth(apiKey);
-				h.addAll(headers);
-			})
+			.defaultHeaders(authHeaders)
 			.defaultStatusHandler(responseErrorHandler).build();
 
 		this.webClient = webClientBuilder
 			.baseUrl(baseUrl)
-			.defaultHeaders(h -> {
-				h.setBearerAuth(apiKey);
-				h.addAll(headers);
-			})
-			.defaultHeaders(ApiUtils.getJsonContentHeaders(apiKey)).build();
+			.defaultHeaders(authHeaders).build();
 		// @formatter:on
 	}
 

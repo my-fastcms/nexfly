@@ -6,6 +6,7 @@ import com.nexfly.ai.common.vectorstore.VectorStoreManager;
 import com.nexfly.common.auth.utils.AuthUtils;
 import com.nexfly.common.core.constants.NexflyConstants;
 import com.nexfly.common.core.exception.NexflyException;
+import com.nexfly.common.core.utils.ApplicationUtils;
 import com.nexfly.oss.common.OssFileManager;
 import com.nexfly.system.manager.ModelManager;
 import com.nexfly.system.mapper.AttachmentMapper;
@@ -19,7 +20,11 @@ import com.nexfly.system.model.DocumentSegment;
 import com.nexfly.system.service.DocumentService;
 import com.nexfly.system.service.SystemService;
 import org.apache.commons.lang3.StringUtils;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.ai.embedding.EmbeddingModel;
+import org.springframework.ai.reader.markdown.MarkdownDocumentReader;
+import org.springframework.ai.reader.markdown.config.MarkdownDocumentReaderConfig;
+import org.springframework.ai.reader.pdf.PagePdfDocumentReader;
 import org.springframework.ai.reader.tika.TikaDocumentReader;
 import org.springframework.ai.transformer.splitter.TokenTextSplitter;
 import org.springframework.ai.vectorstore.VectorStore;
@@ -29,6 +34,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.InputStream;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
@@ -97,10 +103,16 @@ public class DocumentServiceImpl implements DocumentService {
         attachment.setFileName(uploadRequest.fileName());
         attachment.setPath(object);
         attachment.setSize(uploadRequest.fileSize());
-        attachment.setType(Objects.requireNonNull(uploadRequest.fileName()).substring(uploadRequest.fileName().lastIndexOf(".") + 1));
+        attachment.setType(Objects.requireNonNull(getFileNameSuffix(uploadRequest.fileName())));
         attachmentMapper.save(attachment);
 
-        com.nexfly.system.model.Document doc = new com.nexfly.system.model.Document();
+        Document doc = getDocument(attachment, orgId, dataset);
+        documentMapper.save(doc);
+    }
+
+    @NotNull
+    private Document getDocument(Attachment attachment, Long orgId, Dataset dataset) {
+        Document doc = new Document();
         doc.setName(attachment.getFileName());
         doc.setOrgId(orgId);
         doc.setFileId(attachment.getAttachmentId());
@@ -109,26 +121,47 @@ public class DocumentServiceImpl implements DocumentService {
         doc.setProcessStatus(ProcessStatus.UNSTART.getValue());
         doc.setProcessType(ProcessType.GENERAL.getValue());
         doc.setStatus(NexflyConstants.Status.NORMAL.getValue());
-        documentMapper.save(doc);
+        return doc;
     }
 
     @Override
     public void processDocument(AnalysisRequest analysisRequest) throws Exception {
         Long orgId = systemService.getOrgId(AuthUtils.getUserId());
         for (Long documentId : analysisRequest.documentIds()) {
+            ApplicationUtils.getBean(DocumentService.class).processSingleDocument(orgId, documentId);
+        }
+    }
 
-            // 从minio下载文件并进行分割
-            Document doc = documentMapper.findById(documentId);
-            Attachment attachment = attachmentMapper.findById(doc.getFileId());
-            InputStream inputStream = ossFileManager.download(attachment.getPath());
-            List<org.springframework.ai.document.Document> documents = new TikaDocumentReader(new InputStreamResource(inputStream)).get();
-            var tokenTextSplitter = new TokenTextSplitter(400, 5, 200, 10000, true);
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void processSingleDocument(Long orgId, Long documentId) throws Exception {
+        // 从minio下载文件并进行分割
+        Document doc = documentMapper.findById(documentId);
+        Dataset dataset = datasetMapper.findById(doc.getDatasetId());
+        Attachment attachment = attachmentMapper.findById(doc.getFileId());
+        try (InputStream inputStream = ossFileManager.download(attachment.getPath())) {
+            List<org.springframework.ai.document.Document> documents;
+            if (attachment.getType().equalsIgnoreCase("md")) {
+                documents = new MarkdownDocumentReader(new InputStreamResource(inputStream), MarkdownDocumentReaderConfig.builder().build()).get();
+            } else if (attachment.getType().equalsIgnoreCase("pdf")) {
+                documents = new PagePdfDocumentReader(new InputStreamResource(inputStream)).get();
+            } else {
+                documents = new TikaDocumentReader(new InputStreamResource(inputStream)).get();
+            }
+
+            var tokenTextSplitter = new TokenTextSplitter();
             List<org.springframework.ai.document.Document> splitDocuments = tokenTextSplitter.apply(documents);
-
             // 插入向量数据库
-            Dataset dataset = datasetMapper.findById(doc.getDatasetId());
             EmbeddingModel embeddingModel = modelManager.getEmbeddingModel(dataset.getDatasetId());
             VectorStore vectorStore = vectorStoreManager.getVectorStoreFactory().getVectorStore(embeddingModel);
+
+            // 如果向量数据库存在，先删除
+            List<DocumentSegment> segmentList = documentSegmentMapper.getListByDocumentId(doc.getDocumentId());
+            List<String> contentIdList = segmentList.stream().map(DocumentSegment::getContentId).toList();
+            if (!contentIdList.isEmpty()) {
+                vectorStore.delete(contentIdList);
+                documentSegmentMapper.deleteByDocumentIds(Arrays.stream(new Long[] {doc.getDocumentId()}).toList());
+            }
             vectorStore.add(splitDocuments);
 
             List<DocumentSegment> documentSegmentList = splitDocuments.stream().map(document -> {
@@ -138,6 +171,7 @@ public class DocumentServiceImpl implements DocumentService {
                 documentSegment.setContentId(document.getId());
                 documentSegment.setDocumentId(doc.getDocumentId());
                 documentSegment.setContent(document.getContent());
+                documentSegment.setStatus(NexflyConstants.Status.NORMAL.getValue());
                 return documentSegment;
             }).toList();
 
@@ -145,8 +179,10 @@ public class DocumentServiceImpl implements DocumentService {
                 documentSegmentMapper.insertBatch(documentSegmentList);
             }
 
-            doc.setStatus(ProcessStatus.DONE.value);
+            doc.setProcessStatus(ProcessStatus.DONE.value);
             documentMapper.update(doc);
+        } catch (Exception e) {
+            throw new RuntimeException(e.getMessage());
         }
     }
 
@@ -185,9 +221,33 @@ public class DocumentServiceImpl implements DocumentService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void delete(List<Long> documentIds) {
-        documentSegmentMapper.deleteByDocumentIds(documentIds);
-        documentMapper.deleteByDocumentIds(documentIds);
+    public void delete(DeleteDocumentRequest deleteDocumentRequest) {
+        // 删除向量数据库数据
+        try {
+            VectorStore vectorStore = getVectorStore(deleteDocumentRequest.datasetId());
+            for (Long documentId : deleteDocumentRequest.documentIds()) {
+                List<DocumentSegment> documentSegmentList = documentSegmentMapper.getListByDocumentId(documentId);
+                List<String> list = documentSegmentList.stream().map(DocumentSegment::getContentId).toList();
+                vectorStore.delete(list);
+            }
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+
+        documentSegmentMapper.deleteByDocumentIds(deleteDocumentRequest.documentIds());
+        documentMapper.deleteByDocumentIds(deleteDocumentRequest.documentIds());
+    }
+
+    VectorStore getVectorStore(Long datasetId) throws Exception {
+        EmbeddingModel embeddingModel = modelManager.getEmbeddingModel(datasetId);
+        return vectorStoreManager.getVectorStoreFactory().getVectorStore(embeddingModel);
+    }
+
+    private String getFileNameSuffix(String fileName) {
+        if (fileName != null && fileName.contains(".")) {
+            return fileName.substring(fileName.lastIndexOf("."));
+        }
+        return "";
     }
 
 }

@@ -5,6 +5,16 @@ import com.alibaba.fastjson.JSONObject;
 
 public abstract class AbstractModelFactory implements ModelFactory {
 
+    protected final static String TEMPERATURE = "temperature";
+
+    protected final static String TOPP = "topP";
+
+    protected final static String MAXTOKENS = "maxTokens";
+
+    protected final static String FREQUENCYPENALTY = "frequencyPenalty";
+
+    protected final static String PRESENCEPENALTY = "presencePenalty";
+
     protected String apiKey;
 
     protected String apiUrl;

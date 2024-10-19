@@ -14,7 +14,22 @@ public class ZhipuChatModelFactory extends AbstractModelFactory {
 
     @Override
     Object doCreate(CreateModel createModel, JSONObject jsonObject) {
-        return new ZhiPuAiChatModel(new ZhiPuAiApi(getApiKey()), ZhiPuAiChatOptions.builder().withModel(createModel.getModelName()).build());
+        ZhiPuAiChatOptions.Builder builder = ZhiPuAiChatOptions.builder().withModel(createModel.getModelName());
+        if (jsonObject != null) {
+            if (jsonObject.get(TEMPERATURE) != null) {
+                builder.withTemperature(jsonObject.getDouble(TEMPERATURE));
+            }
+
+            if (jsonObject.get(TOPP) != null) {
+                builder.withTopP(jsonObject.getDouble(TOPP));
+            }
+
+            if (jsonObject.get(MAXTOKENS) != null) {
+                builder.withMaxTokens(jsonObject.getInteger(MAXTOKENS));
+            }
+
+        }
+        return new ZhiPuAiChatModel(new ZhiPuAiApi(getApiKey()), builder.build());
     }
 
 }

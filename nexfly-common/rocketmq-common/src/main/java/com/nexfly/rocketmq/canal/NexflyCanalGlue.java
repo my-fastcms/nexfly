@@ -26,7 +26,7 @@ public class NexflyCanalGlue implements CanalGlue {
         CanalBinLogEvent event = SourceAdapterFacade.X.adapt(CanalBinLogEvent.class, content);
         ModelTable modelTable = ModelTable.of(event.getDatabase(), event.getTable());
         List<BaseCanalBinlogEventProcessor<?>> baseCanalBinlogEventProcessors = this.canalBinlogEventProcessorFactory.get(modelTable);
-        if (baseCanalBinlogEventProcessors.isEmpty()) {
+        if (baseCanalBinlogEventProcessors == null || baseCanalBinlogEventProcessors.isEmpty()) {
             return;
         }
         baseCanalBinlogEventProcessors.forEach((processor) -> processor.process(event));

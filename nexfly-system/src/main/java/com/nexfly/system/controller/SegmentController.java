@@ -32,6 +32,29 @@ public class SegmentController {
         return RestResultUtils.success(segmentService.retrievalTest(retrievalTestRequest));
     }
 
+    @GetMapping("get")
+    public RestResult<Object> getSegment(@RequestParam("segmentId") Long segmentId) {
+        return RestResultUtils.success(segmentService.getById(segmentId));
+    }
+
+    @PostMapping("create")
+    public RestResult<Object> create(@RequestBody SegmentService.UpdateSegmentRequest updateSegmentRequest) {
+        segmentService.update(updateSegmentRequest);
+        return RestResultUtils.success();
+    }
+
+    @PostMapping("delete")
+    public RestResult<Object> delete(@RequestBody SegmentService.DeleteSegmentRequest deleteSegmentRequest) {
+        segmentService.delete(deleteSegmentRequest);
+        return RestResultUtils.success();
+    }
+
+    @PostMapping("switch")
+    public RestResult<Object> switchEnable(@RequestBody SegmentService.SwitchEnableRequest switchEnableRequest) {
+        segmentService.switchEnable(switchEnableRequest);
+        return RestResultUtils.success();
+    }
+
     @GetMapping("knowledge/graph")
     public RestResult<Long> getKnowledgeGraph(@RequestParam("documentId") Long documentId) {
         return RestResultUtils.success(documentId);

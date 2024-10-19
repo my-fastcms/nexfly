@@ -15,7 +15,32 @@ public class OpenAiChatModelFactory extends AbstractModelFactory {
 
     @Override
     Object doCreate(CreateModel createModel, JSONObject jsonObject) {
-        return new OpenAiChatModel(getOpenAiApi(), OpenAiChatOptions.builder().withModel(createModel.getModelName()).build());
+        OpenAiChatOptions.Builder builder = OpenAiChatOptions.builder().withModel(createModel.getModelName());
+
+        if (jsonObject != null) {
+            if (jsonObject.get(TEMPERATURE) != null) {
+                builder.withTemperature(jsonObject.getDouble(TEMPERATURE));
+            }
+
+            if (jsonObject.get(TOPP) != null) {
+                builder.withTopP(jsonObject.getDouble(TOPP));
+            }
+
+            if (jsonObject.get(MAXTOKENS) != null) {
+                builder.withMaxTokens(jsonObject.getInteger(MAXTOKENS));
+            }
+
+            if (jsonObject.get(FREQUENCYPENALTY) != null) {
+                builder.withFrequencyPenalty(jsonObject.getDouble(FREQUENCYPENALTY));
+            }
+
+            if (jsonObject.get(PRESENCEPENALTY) != null) {
+                builder.withPresencePenalty(jsonObject.getDouble(PRESENCEPENALTY));
+            }
+
+        }
+
+        return new OpenAiChatModel(getOpenAiApi(), builder.build());
     }
 
     protected OpenAiApi getOpenAiApi() {

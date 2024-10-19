@@ -10,6 +10,7 @@ import com.nexfly.api.system.bean.AppModelInfo;
 import com.nexfly.api.system.bean.AppSaveRequest;
 import com.nexfly.common.auth.utils.AuthUtils;
 import com.nexfly.common.core.exception.NexflyException;
+import com.nexfly.common.core.utils.UuidUtil;
 import com.nexfly.system.manager.DefaultModelManager;
 import com.nexfly.system.manager.ModelManager;
 import com.nexfly.system.mapper.*;
@@ -34,6 +35,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -285,7 +287,7 @@ public class AppServiceImpl implements AppService {
                 .prompt()
                 .system(systemMessage.getContent())
                 .messages(messageList)
-                .user(messageList.get(messageList.size()-1).getContent());
+                .user(messageList.get(messageList.size() - 1).getContent());
 
         functionManager.getFunctionList().forEach(item -> chatClientRequestSpec.function(item.name(), item.description(), item.function()));
 
@@ -299,11 +301,13 @@ public class AppServiceImpl implements AppService {
                             || r.getResult().getOutput().getContent() == null) {
                         return new ChatResponse("true");
                     }
-                    return new ChatResponse(new ChatResponseData(r.getResult().getOutput().getContent(), systemMessage.getContent(), String.valueOf(message.conversationId())));
+                    return new ChatResponse(new ChatResponseData(r.getResult().getOutput().getContent(),
+                            systemMessage.getContent(),
+                            message.conversationId() + UuidUtil.getSimpleUuid()));
                 })
                 .onErrorResume(e -> {
                     // 异常处理逻辑
-                    return Flux.just(new ChatResponse("Error occurred: " + e.getMessage()));
+                    return Mono.just(new ChatResponse("Error occurred: " + e.getMessage()));
                 })
                 ;
     }

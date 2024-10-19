@@ -22,4 +22,8 @@ public interface DocumentSegmentMapper {
 
     void deleteByDocumentIds(@Param("documentIds") List<Long> documentIds);
 
+    void switchEnableBatch(@Param("documentId") Long documentId, @Param("segmentIds") List<Long> segmentIds, @Param("status") Integer status);
+
+    void deleteBySegmentIds(@Param("documentId") Long documentId, @Param("segmentIds") List<Long> segmentIds);
+
 }
