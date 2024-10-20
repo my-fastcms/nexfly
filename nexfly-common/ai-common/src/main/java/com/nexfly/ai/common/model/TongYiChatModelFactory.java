@@ -9,7 +9,7 @@ import org.springframework.stereotype.Service;
 /**
  * 通义千问
  */
-@Service("tongyi-chat")
+@Service("tongyi-qianwen-chat")
 public class TongYiChatModelFactory extends AbstractModelFactory {
 
     @Override

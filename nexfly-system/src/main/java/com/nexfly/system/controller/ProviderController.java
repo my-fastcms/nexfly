@@ -41,11 +41,11 @@ public class ProviderController {
     }
 
     @PostMapping("add")
-    public RestResult<Boolean> saveApiKey(@RequestBody ProviderService.ApiKey apiKey) throws Exception {
-        if (!modelManager.checkApiKey(apiKey)) {
+    public RestResult<Boolean> saveApiKey(@RequestBody ProviderService.ApiKeyRequest apiKeyRequest) throws Exception {
+        if (!modelManager.checkApiKey(apiKeyRequest)) {
             return RestResultUtils.failed("无效的apiKey");
         }
-        providerService.saveApiKey(apiKey);
+        providerService.saveApiKey(apiKeyRequest);
         return RestResultUtils.success();
     }
 

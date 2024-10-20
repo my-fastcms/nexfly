@@ -312,18 +312,6 @@ public class AppServiceImpl implements AppService {
                 ;
     }
 
-    Map<String, Object> getFormVariable(String formVariable) {
-        JSONArray formVariableArray = JSON.parseArray(formVariable);
-        Map<String, Object> map = new HashMap<>();
-        for (int i = 0; i < formVariableArray.size(); i++) {
-            JSONObject jsonObject = formVariableArray.getJSONObject(i);
-            for (String key : jsonObject.keySet()) {
-                map.put(key, jsonObject.get(key));
-            }
-        }
-        return map;
-    }
-
     @Override
     public List<AppConversation> getAppConversationList(Long appId) {
         return appConversationMapper.findListByAppId(appId);
@@ -352,6 +340,18 @@ public class AppServiceImpl implements AppService {
     @Override
     public void deleteAppConversation(Long appId, Long conversationId) {
         appConversationMapper.delete(appId, conversationId);
+    }
+
+    Map<String, Object> getFormVariable(String formVariable) {
+        JSONArray formVariableArray = JSON.parseArray(formVariable);
+        Map<String, Object> map = new HashMap<>();
+        for (int i = 0; i < formVariableArray.size(); i++) {
+            JSONObject jsonObject = formVariableArray.getJSONObject(i);
+            for (String key : jsonObject.keySet()) {
+                map.put(key, jsonObject.get(key));
+            }
+        }
+        return map;
     }
 
 }

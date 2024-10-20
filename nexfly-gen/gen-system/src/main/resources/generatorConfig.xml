@@ -97,10 +97,18 @@
         <table tableName="app_conversation">
             <generatedKey column="conversation_id" sqlStatement="MySql" identity="true"/>
         </table>
-        -->
 
         <table tableName="file">
             <generatedKey column="file_id" sqlStatement="MySql" identity="true"/>
+        </table>
+        -->
+
+        <table tableName="sys_provider">
+            <generatedKey column="sys_provider_id" sqlStatement="MySql" identity="true"/>
+        </table>
+
+        <table tableName="sys_provider_model">
+            <generatedKey column="sys_provider_model_id" sqlStatement="MySql" identity="true"/>
         </table>
 
     </context>

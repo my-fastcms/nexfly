@@ -4,7 +4,6 @@
   <resultMap id="BaseResultMap" type="com.nexfly.system.model.Provider">
     <id column="provider_id" property="providerId" />
     <result column="org_id" property="orgId" />
-    <result column="label" property="label" />
     <result column="provider_name" property="providerName" />
     <result column="api_key" property="apiKey" />
     <result column="api_url" property="apiUrl" />
@@ -12,19 +11,16 @@
     <result column="update_at" property="updateAt" />
   </resultMap>
   <sql id="Vo_Column_List">
-    `provider_id`,`org_id`,`label`,`provider_name`,`create_at`,`update_at`,`api_key`,`api_url`
+    `provider_id`,`org_id`,`provider_name`,`create_at`,`update_at`,`api_key`,`api_url`
   </sql>
   <insert id="save">
-    insert into provider (`provider_id`,`org_id`,`label`,`provider_name`,`api_key`,`api_url`) values (#{provider.providerId},#{provider.orgId},#{provider.label},#{provider.providerName},#{provider.apiKey},#{provider.apiUrl})
+    insert into provider (`provider_id`,`org_id`,`provider_name`,`api_key`,`api_url`,`create_by`,`update_by`) values (#{provider.providerId},#{provider.orgId},#{provider.providerName},#{provider.apiKey},#{provider.apiUrl},#{provider.createBy},#{provider.updateBy})
   </insert>
   <update id="update">
     update provider
     <set>
       <if test="provider.orgId != null">
         org_id = #{provider.orgId,jdbcType=BIGINT},
-      </if>
-      <if test="provider.label != null">
-        label = #{provider.label},
       </if>
       <if test="provider.apiKey != null">
         api_key = #{provider.apiKey},

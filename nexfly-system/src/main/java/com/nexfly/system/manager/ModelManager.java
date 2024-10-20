@@ -16,6 +16,6 @@ public interface ModelManager {
 
     Object createModel(CreateModel createModel) throws Exception;
 
-    Boolean checkApiKey(ProviderService.ApiKey apiKey);
+    Boolean checkApiKey(ProviderService.ApiKeyRequest apiKey);
 
 }

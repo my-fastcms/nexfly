@@ -1,6 +1,7 @@
 package com.nexfly.system.service.impl;
 
 import com.nexfly.common.auth.utils.AuthUtils;
+import com.nexfly.common.core.constants.NexflyConstants;
 import com.nexfly.common.core.utils.UuidUtil;
 import com.nexfly.system.mapper.AccountMapper;
 import com.nexfly.system.mapper.DatasetMapper;
@@ -49,6 +50,7 @@ public class DatasetServiceImpl implements DatasetService {
             String className = "Class" + UuidUtil.getSimpleUuid();
             dataset.setVsIndexNodeId(className);
             dataset.setOrgId(accountMapper.getUserOrg(AuthUtils.getUserId()).getOrgId());
+            dataset.setStatus(NexflyConstants.Status.NORMAL.getValue());
             datasetMapper.save(dataset);
         }
     }

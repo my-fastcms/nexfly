@@ -11,6 +11,8 @@ import java.util.Map;
  */
 public interface ProviderService {
 
+    Map<String, SystemProvider> getSystemProviderMap();
+
     List<SystemProviderInfo> getSystemProviderList();
 
     /**
@@ -36,7 +38,7 @@ public interface ProviderService {
      */
     Map<String, Object> getUserAddedProviderList();
 
-    void saveApiKey(ApiKey apiKey) throws Exception;
+    void saveApiKey(ApiKeyRequest apiKey) throws Exception;
 
     record Llm(String provider, String name, String type, String usedToken) {
 
@@ -46,11 +48,20 @@ public interface ProviderService {
 
     }
 
-    record ApiKey(String provider, String apiKey, String apiUrl) {
+    record ApiKeyRequest(String provider, String apiKey, String apiUrl) {
 
     }
 
-    record SystemProviderInfo(String label, String provider, List<String> modelTypes, String tags, String status) {
+    record SystemProviderInfo(String provider, String logo, List<String> modelTypes, String tags, Integer status) {
+
+    }
+
+    record SystemProvider(String provider, String logo, Integer status, String tags, List<SystemProviderModel> providerModelList) {
+
+    }
+
+    record SystemProviderModel(String provider, String model, String modelType, Integer maxTokens, String tags) {
+
     }
 
 }

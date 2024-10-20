@@ -1,5 +1,0 @@
-provider: tongyi
-model: text-embedding-v1
-modelType: embedding
-modelProperties:
-  contextSize: 2048

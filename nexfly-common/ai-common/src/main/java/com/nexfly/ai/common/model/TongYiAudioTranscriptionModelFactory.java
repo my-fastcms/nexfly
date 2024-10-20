@@ -6,7 +6,7 @@ import org.springframework.stereotype.Service;
 /**
  * text 2 audio or audio 2 text
  */
-@Service("tongyi-att")
+@Service("tongyi-qianwen-att")
 public class TongYiAudioTranscriptionModelFactory extends AbstractModelFactory {
 
     @Override

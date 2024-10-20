@@ -2,9 +2,6 @@ package com.nexfly.system.manager;
 
 import com.nexfly.ai.common.model.CreateModel;
 import com.nexfly.ai.common.model.ModelFactory;
-import com.nexfly.ai.common.provider.ProviderManager;
-import com.nexfly.ai.common.provider.SystemProvider;
-import com.nexfly.ai.common.provider.SystemProviderModel;
 import com.nexfly.api.system.bean.AppModelInfo;
 import com.nexfly.system.mapper.AppMapper;
 import com.nexfly.system.mapper.AppModelMapper;
@@ -36,6 +33,9 @@ public class DefaultModelManager implements ModelManager, ApplicationContextAwar
     private ApplicationContext applicationContext;
 
     @Autowired
+    private ProviderService providerService;
+
+    @Autowired
     private AppModelMapper appModelMapper;
 
     @Autowired
@@ -45,13 +45,7 @@ public class DefaultModelManager implements ModelManager, ApplicationContextAwar
     private ProviderModelMapper providerModelMapper;
 
     @Autowired
-    private ProviderService providerService;
-
-    @Autowired
     private AppMapper appMapper;
-
-    @Autowired
-    private ProviderManager providerManager;
 
     @Override
     public ChatModel getChatModel(Long appId) {
@@ -75,7 +69,7 @@ public class DefaultModelManager implements ModelManager, ApplicationContextAwar
         }
         ModelFactory modelCreateService;
         try {
-            modelCreateService = (ModelFactory) applicationContext.getBean(createModel.getProviderName() + "-" + createModel.getModelType());
+            modelCreateService = (ModelFactory) applicationContext.getBean(createModel.getProviderName().toLowerCase() + "-" + createModel.getModelType());
         } catch (BeansException e) {
             throw new RuntimeException(e);
         }
@@ -83,10 +77,10 @@ public class DefaultModelManager implements ModelManager, ApplicationContextAwar
     }
 
     @Override
-    public Boolean checkApiKey(ProviderService.ApiKey apiKey) {
-        SystemProvider systemProvider = providerManager.getSystemProviderMap().get(apiKey.provider());
-        List<SystemProviderModel> providerModelList = systemProvider.getProviderModelList();
-        String model = providerModelList.stream().filter(pm -> pm.getModelType().equals(DefaultModelManager.ModelType.CHAT.getValue())).toList().get(0).getModel();
+    public Boolean checkApiKey(ProviderService.ApiKeyRequest apiKey) {
+        ProviderService.SystemProvider systemProvider = providerService.getSystemProviderMap().get(apiKey.provider());
+        List<ProviderService.SystemProviderModel> providerModelList = systemProvider.providerModelList();
+        String model = providerModelList.stream().filter(pm -> pm.modelType().equals(DefaultModelManager.ModelType.CHAT.getValue())).toList().get(0).model();
 
         CreateModel createModel = new CreateModel(apiKey.apiKey(), apiKey.apiUrl(), apiKey.provider(), model, DefaultModelManager.ModelType.CHAT.getValue());
         try {

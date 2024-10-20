@@ -5,7 +5,7 @@ import com.nexfly.ai.tongyi.TongYiAudioSpeechModel;
 import com.nexfly.ai.tongyi.api.TongYiAiAudioApi;
 import org.springframework.stereotype.Service;
 
-@Service("tongyi-tts")
+@Service("tongyi-qianwen-tts")
 public class TongYiAudioSpeechModelFactory extends AbstractModelFactory {
     @Override
     Object doCreate(CreateModel createModel, JSONObject jsonObject) {

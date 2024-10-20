@@ -52,9 +52,9 @@
   </select>
 
   <insert id="insertBatch">
-    insert into provider_model (`org_id`,`provider_name`,`model_name`,`model_type`) values
+    insert into provider_model (`org_id`,`provider_name`,`model_name`,`model_type`,`create_by`,`update_by`) values
     <foreach collection="providerModelList" item="model" separator=",">
-      (#{model.orgId},#{model.providerName},#{model.modelName},#{model.modelType})
+      (#{model.orgId},#{model.providerName},#{model.modelName},#{model.modelType},#{model.createBy},#{model.updateBy})
     </foreach>
   </insert>
 

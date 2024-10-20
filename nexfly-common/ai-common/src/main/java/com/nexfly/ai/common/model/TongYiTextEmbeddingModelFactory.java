@@ -8,7 +8,7 @@ import com.nexfly.ai.tongyi.api.TongYiAiApiConstants;
 import org.springframework.ai.document.MetadataMode;
 import org.springframework.stereotype.Service;
 
-@Service("tongyi-embedding")
+@Service("tongyi-qianwen-embedding")
 public class TongYiTextEmbeddingModelFactory extends AbstractModelFactory {
 
     @Override

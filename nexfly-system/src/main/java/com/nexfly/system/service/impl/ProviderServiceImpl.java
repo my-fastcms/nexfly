@@ -1,30 +1,30 @@
 package com.nexfly.system.service.impl;
 
-import com.nexfly.ai.common.provider.ProviderManager;
-import com.nexfly.ai.common.provider.SystemProvider;
-import com.nexfly.ai.common.provider.SystemProviderModel;
 import com.nexfly.common.auth.utils.AuthUtils;
-import com.nexfly.system.mapper.AccountMapper;
-import com.nexfly.system.mapper.ProviderMapper;
-import com.nexfly.system.mapper.ProviderModelMapper;
+import com.nexfly.common.core.exception.NexflyException;
+import com.nexfly.system.mapper.*;
 import com.nexfly.system.model.Provider;
 import com.nexfly.system.model.ProviderModel;
 import com.nexfly.system.service.ProviderService;
 import org.jetbrains.annotations.NotNull;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
-public class ProviderServiceImpl implements ProviderService {
+public class ProviderServiceImpl implements ProviderService, InitializingBean {
+
+    private Map<String, SystemProvider> systemProviderMap = Collections.synchronizedMap(new HashMap<>());
 
     @Autowired
-    private ProviderManager providerManager;
+    private SysProviderMapper sysProviderMapper;
+
+    @Autowired
+    private SysProviderModelMapper sysProviderModelMapper;
 
     @Autowired
     private ProviderModelMapper providerModelMapper;
@@ -37,7 +37,7 @@ public class ProviderServiceImpl implements ProviderService {
 
     @Override
     public List<SystemProviderInfo> getSystemProviderList() {
-        return providerManager.getSystemProviderList().stream().map(item -> new SystemProviderInfo(item.getLabel(), item.getProvider(), item.getConfigurateMethods(), String.join(",", item.getSupportedModelTypes()), "1")).toList();
+        return sysProviderMapper.list().stream().map(item -> new SystemProviderInfo(item.getName(), item.getLogo(), Arrays.stream(item.getTags().split(",")).toList(), item.getTags(), item.getStatus())).toList();
     }
 
     @Override
@@ -61,11 +61,11 @@ public class ProviderServiceImpl implements ProviderService {
         Long orgId = accountMapper.getUserOrg(AuthUtils.getUserId()).getOrgId();
         List<Provider> providerList = getProviderListByOrgId(orgId);
         for (Provider provider : providerList) {
-            SystemProvider systemProvider = providerManager.getSystemAvailableProviderMap().get(provider.getProviderName());
+            SystemProvider systemProvider = getSystemProviderMap().get(provider.getProviderName());
             if (systemProvider != null) {
-                List<SystemProviderModel> providerModelList = systemProvider.getProviderModelList();
-                List<Llm> llmList = providerModelList.stream().map(spm -> new Llm(spm.getProvider(), spm.getModel(), spm.getModelType(), "")).collect(Collectors.toList());
-                providerMap.put(provider.getLabel(), llmList);
+                List<SystemProviderModel> providerModelList = systemProvider.providerModelList();
+                List<Llm> llmList = providerModelList.stream().map(spm -> new Llm(spm.provider(), spm.model(), spm.modelType(), "")).collect(Collectors.toList());
+                providerMap.put(provider.getProviderName(), llmList);
             }
         }
         return providerMap;
@@ -73,7 +73,7 @@ public class ProviderServiceImpl implements ProviderService {
 
     @Override
     public Map<String, Object> getUserAddedProviderList() {
-        return getStringObjectMap(providerManager.getSystemProviderMap());
+        return getStringObjectMap(getSystemProviderMap());
     }
 
     @NotNull
@@ -84,9 +84,9 @@ public class ProviderServiceImpl implements ProviderService {
         for (Provider provider : providerList) {
             SystemProvider systemProvider = systemProviderMap.get(provider.getProviderName());
             if (systemProvider != null) {
-                List<SystemProviderModel> providerModelList = systemProvider.getProviderModelList();
-                List<Llm> llmList = providerModelList.stream().map(spm -> new Llm(spm.getProvider(), spm.getModel(), spm.getModelType(), "")).collect(Collectors.toList());
-                providerMap.put(provider.getLabel(), new LlmModel(llmList, String.join(",", systemProvider.getSupportedModelTypes())));
+                List<SystemProviderModel> providerModelList = systemProvider.providerModelList();
+                List<Llm> llmList = providerModelList.stream().map(spm -> new Llm(spm.provider(), spm.model(), spm.modelType(), "")).collect(Collectors.toList());
+                providerMap.put(provider.getProviderName(), new LlmModel(llmList, systemProvider.tags()));
             }
         }
         return providerMap;
@@ -94,10 +94,10 @@ public class ProviderServiceImpl implements ProviderService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void saveApiKey(ApiKey apiKey) throws Exception {
-        SystemProvider systemProvider = providerManager.getSystemProviderMap().get(apiKey.provider());
+    public void saveApiKey(ApiKeyRequest apiKey) throws Exception {
+        SystemProvider systemProvider = getSystemProviderMap().get(apiKey.provider());
         if (systemProvider == null) {
-            throw new Exception(apiKey.provider() + "not found");
+            throw new NexflyException(apiKey.provider() + "not found");
         }
 
         Long orgId = accountMapper.getUserOrg(AuthUtils.getUserId()).getOrgId();
@@ -108,15 +108,14 @@ public class ProviderServiceImpl implements ProviderService {
             provider.setApiKey(apiKey.apiKey());
             provider.setApiUrl(apiKey.apiUrl());
             provider.setProviderName(apiKey.provider());
-            provider.setLabel(systemProvider.getLabel());
             providerMapper.save(provider);
 
             // save provider model
-            List<ProviderModel> providerModelList = systemProvider.getProviderModelList().stream().map(item -> {
+            List<ProviderModel> providerModelList = systemProvider.providerModelList().stream().map(item -> {
                 ProviderModel providerModel = new ProviderModel();
-                providerModel.setProviderName(item.getProvider());
-                providerModel.setModelName(item.getModel());
-                providerModel.setModelType(item.getModelType());
+                providerModel.setProviderName(item.provider());
+                providerModel.setModelName(item.model());
+                providerModel.setModelType(item.modelType());
                 providerModel.setOrgId(orgId);
                 return providerModel;
             }).toList();
@@ -129,6 +128,20 @@ public class ProviderServiceImpl implements ProviderService {
             providerMapper.update(provider);
         }
 
+    }
+
+    @Override
+    public Map<String, SystemProvider> getSystemProviderMap() {
+        return systemProviderMap;
+    }
+
+    @Override
+    public void afterPropertiesSet() throws Exception {
+        List<SystemProviderModel> sysProviderModelList = sysProviderModelMapper.list().stream().map(item -> new SystemProviderModel(item.getProviderName(), item.getModelName(), item.getModelType(), item.getMaxTokens(), item.getTags())).toList();
+        Map<String, List<SystemProviderModel>> map =  sysProviderModelList.stream().collect(Collectors.groupingBy(SystemProviderModel::provider));
+        List<SystemProvider> sysProviderList = sysProviderMapper.list().stream().map(item -> new SystemProvider(item.getName(), item.getLogo(), item.getStatus(), item.getTags(), map.get(item.getName()))).toList();
+        Map<String, SystemProvider> stringSystemProviderMap = sysProviderList.stream().collect(Collectors.toMap(SystemProvider::provider, SystemProviderResponse -> SystemProviderResponse));
+        systemProviderMap.putAll(stringSystemProviderMap);
     }
 
 }

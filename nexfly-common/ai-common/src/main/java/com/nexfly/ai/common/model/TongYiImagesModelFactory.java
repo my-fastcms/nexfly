@@ -9,7 +9,7 @@ import org.springframework.stereotype.Service;
 /**
  * 通义千问
  */
-@Service("tongyi-image")
+@Service("tongyi-qianwen-image")
 public class TongYiImagesModelFactory extends AbstractModelFactory {
 
     @Override
