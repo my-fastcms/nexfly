@@ -7,9 +7,7 @@ import com.nexfly.common.core.rest.RestResultUtils;
 import com.nexfly.system.model.Account;
 import com.nexfly.system.service.SystemService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -23,6 +21,11 @@ public class AccountController {
     @GetMapping("get")
     public RestResult<Account> getAccount() {
         return RestResultUtils.success(systemService.findById(AuthUtils.getUserId()));
+    }
+
+    @PostMapping("setting")
+    public RestResult<Boolean> setting(@RequestBody SystemService.AccountUpdateRequest accountUpdateRequest) {
+        return RestResultUtils.success(systemService.update(accountUpdateRequest));
     }
 
     @GetMapping("org/list")

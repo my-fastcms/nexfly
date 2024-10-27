@@ -24,6 +24,7 @@ import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.client.advisor.AbstractChatMemoryAdvisor;
 import org.springframework.ai.chat.client.advisor.PromptChatMemoryAdvisor;
 import org.springframework.ai.chat.client.advisor.QuestionAnswerAdvisor;
+import org.springframework.ai.chat.client.advisor.SimpleLoggerAdvisor;
 import org.springframework.ai.chat.client.advisor.api.Advisor;
 import org.springframework.ai.chat.messages.Message;
 import org.springframework.ai.chat.messages.UserMessage;
@@ -256,23 +257,23 @@ public class AppServiceImpl implements AppService {
         AppConfig appConfig = appConfigMapper.findByAppId(app.getAppId());
         // 系统消息提示词
         String system = appConfig.getPrePrompt();
+        // 变量
+//        Map<String, Object> formVariable = getFormVariable(appConfig.getFormVariable());
+        SystemPromptTemplate systemPromptTemplate = new SystemPromptTemplate(system);
+        Message systemMessage = systemPromptTemplate.createMessage(); //formVariable.isEmpty() ? systemPromptTemplate.createMessage() : systemPromptTemplate.createMessage(formVariable);
 
         // 查找app关联的数据集配置信息
         List<Dataset> datasetList = datasetMapper.findDatasetListByAppId(app.getAppId());
         // 根据dataset构建List<RequestResponseAdvisor>
         List<Advisor> requestResponseAdvisorList = new ArrayList<>();
+        requestResponseAdvisorList.add(new SimpleLoggerAdvisor());
         requestResponseAdvisorList.add(new PromptChatMemoryAdvisor(new NexflyChatMemory(AuthUtils.getUserId(), app.getAppId(), appMessageMapper)));
         for (Dataset dataset : datasetList) {
             EmbeddingModel embeddingModel = modelManager.getEmbeddingModel(dataset.getDatasetId());
             var qaAdvisor = new QuestionAnswerAdvisor(vectorStoreManager.getVectorStoreFactory().getVectorStore(embeddingModel),
-                    SearchRequest.defaults().withSimilarityThreshold(appConfig.getSimilarityThreshold()).withTopK(appConfig.getTopN()), system);
+                    SearchRequest.defaults().withSimilarityThreshold(appConfig.getSimilarityThreshold()).withTopK(appConfig.getTopN()));
             requestResponseAdvisorList.add(qaAdvisor);
         }
-
-        // 变量
-        Map<String, Object> formVariable = getFormVariable(appConfig.getFormVariable());
-        SystemPromptTemplate systemPromptTemplate = new SystemPromptTemplate(system);
-        Message systemMessage = formVariable.isEmpty() ? systemPromptTemplate.createMessage() : systemPromptTemplate.createMessage(formVariable);
 
         List<Message> messageList = new ArrayList<>();
         message.messages().forEach(m -> {
@@ -287,13 +288,13 @@ public class AppServiceImpl implements AppService {
                 .prompt()
                 .system(systemMessage.getContent())
                 .messages(messageList)
-                .user(messageList.get(messageList.size() - 1).getContent());
+                .user(messageList.get(messageList.size() - 1).getContent())
+                ;
 
         functionManager.getFunctionList().forEach(item -> chatClientRequestSpec.function(item.name(), item.description(), item.function()));
 
         return chatClientRequestSpec
-                .advisors(a -> a.param(USER_ID, AuthUtils.getUserId())
-                        .param(AbstractChatMemoryAdvisor.CHAT_MEMORY_CONVERSATION_ID_KEY, message.conversationId()))
+                .advisors(a -> a.param(USER_ID, AuthUtils.getUserId()).param(AbstractChatMemoryAdvisor.CHAT_MEMORY_CONVERSATION_ID_KEY, message.conversationId()))
                 .advisors(requestResponseAdvisorList)
                 .stream()
                 .chatResponse().map(r -> {
@@ -301,9 +302,7 @@ public class AppServiceImpl implements AppService {
                             || r.getResult().getOutput().getContent() == null) {
                         return new ChatResponse("true");
                     }
-                    return new ChatResponse(new ChatResponseData(r.getResult().getOutput().getContent(),
-                            systemMessage.getContent(),
-                            message.conversationId() + UuidUtil.getSimpleUuid()));
+                    return new ChatResponse(new ChatResponseData(r.getResult().getOutput().getContent(), r.getMetadata(), message.conversationId() + UuidUtil.getSimpleUuid()));
                 })
                 .onErrorResume(e -> {
                     // 异常处理逻辑

@@ -1,5 +1,6 @@
 package com.nexfly.system.service.impl;
 
+import com.nexfly.common.auth.utils.AuthUtils;
 import com.nexfly.system.mapper.AccountMapper;
 import com.nexfly.system.model.Account;
 import com.nexfly.system.service.SystemService;
@@ -37,6 +38,18 @@ public class SystemServiceImpl implements SystemService {
     @Override
     public Long getOrgId(Long userId) {
         return getUserOrg(userId).getOrgId();
+    }
+
+    @Override
+    public Boolean update(AccountUpdateRequest accountUpdateRequest) {
+        Account account = findById(AuthUtils.getUserId());
+        account.setAvatar(accountUpdateRequest.avatar());
+        account.setLanguage(accountUpdateRequest.language());
+        account.setNickname(accountUpdateRequest.nickname());
+        account.setTimezone(accountUpdateRequest.timezone());
+        account.setTheme(accountUpdateRequest.color_schema());
+        accountMapper.update(account);
+        return true;
     }
 
 }

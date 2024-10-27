@@ -756,7 +756,7 @@ public class TongYiAiApi {
      * List of multiple embedding responses.
      *
      * @param <T> Type of the entities in the data list.
-     * @param data List of entities.
+     * @param output List of entities.
      * @param model ID of the model to use.
      * @param usage Usage statistics for the completion request.
      */

@@ -5,6 +5,7 @@ import com.nexfly.api.system.bean.AppSaveRequest;
 import com.nexfly.common.core.exception.NexflyException;
 import com.nexfly.system.model.App;
 import com.nexfly.system.model.AppConversation;
+import org.springframework.ai.chat.metadata.ChatResponseMetadata;
 import reactor.core.publisher.Flux;
 
 import java.util.ArrayList;
@@ -34,7 +35,7 @@ public interface AppService {
 
     void deleteAppConversation(Long appId, Long conversationId);
 
-    record ChatResponse(Integer retcode, String retmsge, Object data) {
+    record ChatResponse(Integer code, String message, Object data) {
 
         public ChatResponse(Object data) {
             this(0, "", data);
@@ -42,10 +43,10 @@ public interface AppService {
 
     }
 
-    record ChatResponseData(String answer, List<String> reference, String prompt, String id, String audioBinary) {
+    record ChatResponseData(String answer, List<String> reference, String id, ChatResponseMetadata metadata, String audioBinary) {
 
-        public ChatResponseData(String answer, String prompt, String id) {
-            this(answer, new ArrayList<>(), prompt, id, "");
+        public ChatResponseData(String answer, ChatResponseMetadata metadata, String id) {
+            this(answer, new ArrayList<>(), id, metadata, "");
         }
 
     }

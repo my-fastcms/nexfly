@@ -17,6 +17,12 @@ public interface SystemService {
 
     Long getOrgId(Long userId);
 
+    Boolean update(AccountUpdateRequest accountUpdateRequest);
+
+    record AccountUpdateRequest(String avatar, String color_schema, String language, String nickname, String timezone) {
+
+    }
+
     class Org implements Serializable {
         Long orgId;
         String orgName;
