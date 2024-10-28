@@ -107,6 +107,11 @@ $ git clone https://github.com/my-fastcms/nexfly.git
 或者
 $ git clone https://gitee.com/xjd2020/nexfly.git
 
+$ cd nexfly
+$ mvn install:install-file -Dfile=./nexfly-common/rocketmq-common/lib/canal-glue-core.jar -DgroupId=cn.throwx -DartifactId=canal-glue-core -Dversion=1.0 -Dpackaging=jar
+$ mvn clean
+$ mvn package
+
 $ cd nexfly/nexfly-gateway
 $ docker build -t wangjun/nexfly-gateway:0.0.1 .
 
