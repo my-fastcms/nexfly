@@ -164,6 +164,7 @@ services:
       ELASTICSEARCH_USERNAME: ${KIBANA_USER}
       ELASTICSEARCH_PASSWORD: ${KIBANA_PASSWORD}
       ELASTICSEARCH_HOSTS: "http://nexfly-elasticsearch:9200"
+      TZ: ${TIMEZONE}
     ports:
       - ${KIBANA_PORT}:5601
     depends_on:
@@ -180,6 +181,8 @@ services:
       - nexfly
     expose:
       - 11111
+    environment:
+      - TZ=${TIMEZONE}
 #    depends_on:
 #      - nexfly-mysql
 #      - nexfly-elasticsearch
@@ -188,6 +191,8 @@ services:
       - ./canal/conf/example:/home/admin/canal-server/conf/example
       - ./canal/conf/canal.properties:/home/admin/canal-server/conf/canal.properties
       - ./canal/logs:/home/admin/canal-server/logs
+    privileged: true
+    user: root
 
   nexfly-rocketmq-namesrv:
     image: apache/rocketmq:${ROCKET_MQ_VERSION}
@@ -202,7 +207,9 @@ services:
       - nf_namesrv:/home/rocketmq/store
     environment:
       JAVA_OPT_EXT: "-Duser.home=/home/rocketmq -Xms512M -Xmx512M -Xmn128M"
+      TZ: ${TIMEZONE}
     command: ["sh","mqnamesrv"]
+    user: root
 
   nexfly-rocketmq-broker:
     image: apache/rocketmq:${ROCKET_MQ_VERSION}
@@ -220,6 +227,7 @@ services:
       - ./rocketmq/broker/conf/broker.conf:/etc/rocketmq/broker.conf
     environment:
       JAVA_OPT_EXT: "-Duser.home=/home/rocketmq -Xms512M -Xmx512M -Xmn128M -XX:-AssumeMP"
+      TZ: ${TIMEZONE}
     command: ["sh","mqbroker","-c","/etc/rocketmq/broker.conf","-n","nexfly-rocketmq-namesrv:9876","autoCreateTopicEnable=false"]
     depends_on:
       - nexfly-rocketmq-namesrv
@@ -233,6 +241,7 @@ services:
       - 8180:8080
     environment:
       JAVA_OPTS: "-Drocketmq.namesrv.addr=nexfly-rocketmq-namesrv:9876 -Dcom.rocketmq.sendMessageWithVIPChannel=false"
+      TZ: ${TIMEZONE}
     depends_on:
       - nexfly-rocketmq-namesrv
     networks:
