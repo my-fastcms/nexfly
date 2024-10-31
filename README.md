@@ -1,3 +1,25 @@
+<div align="center">
+<a href="https://nexfly.xjd2020.com/">
+<img src="doc/images/nexfly-logo.webp" width="520" alt="nexfly logo">
+</a>
+</div>
+
+<p align="center">
+  <a href="./README.md">简体中文</a> |
+  <a href="./README.en.md">English</a> |
+</p>
+
+<p align="center">
+    <a href="https://github.com/my-fastcms/nexfly/releases/latest">
+        <img src="https://img.shields.io/github/v/release/my-fastcms/nexfly?color=blue&label=Latest%20Release" alt="Latest Release">
+    </a>
+    <a href="https://nexfly.xjd2020.com/" target="_blank">
+        <img alt="Static Badge" src="https://img.shields.io/badge/Online-Demo-4e6b99"></a>
+    <a href="https://github.com/my-fastcms/nexfly/blob/main/LICENSE">
+    <img height="21" src="https://img.shields.io/badge/License-Apache--2.0-ffffff?labelColor=d4eaf7&color=2e6cc4" alt="license">
+  </a>
+</p>
+
 ## 💡 Nexfly 是什么？
 
 [Nexfly](https://nexfly.cc/) 是一个深度整合spring-ai框架构建的开源 RAG（Retrieval-Augmented Generation）应用项目。
