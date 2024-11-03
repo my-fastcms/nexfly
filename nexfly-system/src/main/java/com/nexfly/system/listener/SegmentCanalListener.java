@@ -65,7 +65,7 @@ public class SegmentCanalListener extends BaseCanalBinlogEventProcessor<SegmentC
     private void syncSegmentToElasticsearch(SegmentCanalResponse segment) throws IOException {
         IndexRequest<SegmentCanalResponse> request = IndexRequest.of(i -> i
                 .index(SEGMENT_INDEX)  // 索引名称
-                .id(String.valueOf(segment.getSegmentId()))  // 使用segmentId作为Elasticsearch文档ID
+                .id(String.valueOf(segment.getContentId()))  // 使用contentId作为Elasticsearch文档ID
                 .document(segment)  // 文档内容，直接传入对象，Elasticsearch Java API Client会序列化为JSON
         );
         IndexResponse response = elasticsearchClient.index(request);
@@ -76,7 +76,7 @@ public class SegmentCanalListener extends BaseCanalBinlogEventProcessor<SegmentC
     private void processUpdateInternal(SegmentCanalResponse segment) throws IOException {
         UpdateRequest<SegmentCanalResponse, SegmentCanalResponse> request = UpdateRequest.of(u -> u
                 .index(SEGMENT_INDEX)  // 索引名称
-                .id(String.valueOf(segment.getSegmentId()))  // 文档ID
+                .id(String.valueOf(segment.getContentId()))  // 文档ID
                 .doc(segment)  // 更新的文档内容
                 .docAsUpsert(true)  // 如果文档不存在，则插入
         );

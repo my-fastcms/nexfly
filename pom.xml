@@ -9,7 +9,7 @@
     <name>nexfly</name>
     <description>nexfly project for Spring Boot</description>
     <properties>
-        <revision>0.0.1</revision>
+        <revision>0.0.2-SNAPSHOT</revision>
         <spring-boot.version>3.3.2</spring-boot.version>
         <spring.cloud.version>2023.0.3</spring.cloud.version>
         <spring-cloud-alibaba.version>2023.0.1.2</spring-cloud-alibaba.version>
@@ -29,18 +29,13 @@
         <jjwt.version>0.11.2</jjwt.version>
         <maven-flatten-version>1.1.0</maven-flatten-version>
         <maven-compiler-plugin.version>3.5.1</maven-compiler-plugin.version>
-        <docker.plugin.version>0.32.0</docker.plugin.version>
-        <docker.host>http://docker.xjd2020.com</docker.host>
-        <docker.registry>registry.cn-shanghai.aliyuncs.com</docker.registry>
-        <docker.namespace>nexfly-cloud</docker.namespace>
-        <docker.username>username</docker.username>
-        <docker.password>password</docker.password>
+        <docker.plugin.version>0.45.1</docker.plugin.version>
     </properties>
 
     <scm>
-        <url>git@gitee.com:xjd2020/niux.git</url>
-        <connection>scm:git@gitee.com:xjd2020/niux.git</connection>
-        <developerConnection>scm:git@gitee.com:xjd2020/niux.git</developerConnection>
+        <url>git@gitee.com:xjd2020/nexfly.git</url>
+        <connection>scm:git@gitee.com:xjd2020/nexfly.git</connection>
+        <developerConnection>scm:git@gitee.com:xjd2020/nexfly.git</developerConnection>
         <tag>nexfly-${revision}</tag>
     </scm>
 
@@ -55,15 +50,15 @@
 
     <licenses>
         <license>
-            <name>LGPL-3.0</name>
-            <url>https://gitee.com/xjd2020/niux/blob/master/LICENSE</url>
+            <name>Apache-2.0</name>
+            <url>https://gitee.com/xjd2020/nexfly/blob/master/LICENSE</url>
             <distribution>repo</distribution>
         </license>
     </licenses>
 
     <issueManagement>
         <system>gitee</system>
-        <url>https://gitee.com/xjd2020/niux/issues</url>
+        <url>https://gitee.com/xjd2020/nexfly/issues</url>
     </issueManagement>
 
     <modules>
@@ -268,20 +263,9 @@
                     <artifactId>docker-maven-plugin</artifactId>
                     <version>${docker.plugin.version}</version>
                     <configuration>
-                        <!-- Docker Remote Api-->
-                        <dockerHost>${docker.host}</dockerHost>
-                        <!-- Docker 镜像私服-->
-                        <registry>${docker.registry}</registry>
-                        <!-- 认证信息-->
-                        <authConfig>
-                            <push>
-                                <username>${docker.username}</username>
-                                <password>${docker.password}</password>
-                            </push>
-                        </authConfig>
                         <images>
                             <image>
-                                <name>${docker.registry}/${docker.namespace}/${project.name}:${project.version}</name>
+                                <name>wangjun/${project.name}:${project.version}</name>
                                 <build>
                                     <dockerFile>${project.basedir}/Dockerfile</dockerFile>
                                 </build>

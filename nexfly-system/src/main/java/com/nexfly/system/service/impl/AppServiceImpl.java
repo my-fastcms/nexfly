@@ -32,6 +32,7 @@ import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.ai.chat.prompt.SystemPromptTemplate;
 import org.springframework.ai.embedding.EmbeddingModel;
 import org.springframework.ai.vectorstore.SearchRequest;
+import org.springframework.ai.vectorstore.filter.FilterExpressionBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -271,7 +272,9 @@ public class AppServiceImpl implements AppService {
         for (Dataset dataset : datasetList) {
             EmbeddingModel embeddingModel = modelManager.getEmbeddingModel(dataset.getDatasetId());
             var qaAdvisor = new QuestionAnswerAdvisor(vectorStoreManager.getVectorStoreFactory().getVectorStore(embeddingModel),
-                    SearchRequest.defaults().withSimilarityThreshold(appConfig.getSimilarityThreshold()).withTopK(appConfig.getTopN()));
+                    SearchRequest.defaults().withSimilarityThreshold(appConfig.getSimilarityThreshold()).withTopK(appConfig.getTopN())
+                            .withFilterExpression(new FilterExpressionBuilder().eq("datasetId", dataset.getDatasetId()).build())
+                            );
             requestResponseAdvisorList.add(qaAdvisor);
         }
 
@@ -337,8 +340,10 @@ public class AppServiceImpl implements AppService {
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public void deleteAppConversation(Long appId, Long conversationId) {
         appConversationMapper.delete(appId, conversationId);
+        appMessageMapper.deleteByConversationId(appId, conversationId);
     }
 
     Map<String, Object> getFormVariable(String formVariable) {

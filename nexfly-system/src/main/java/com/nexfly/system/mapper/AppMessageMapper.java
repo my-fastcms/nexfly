@@ -6,6 +6,7 @@ import org.apache.ibatis.annotations.Param;
 import java.util.List;
 
 public interface AppMessageMapper {
+
     AppMessage findById(@Param("messageId") Long messageId);
 
     void save(@Param("appMessage") AppMessage AppMessage);
@@ -13,5 +14,7 @@ public interface AppMessageMapper {
     void update(@Param("appMessage") AppMessage AppMessage);
 
     List<AppMessage> getConversationLastNMessageList(@Param("conversationId") Long conversationId, @Param("lastN") Integer lastN);
+
+    void deleteByConversationId(@Param("appId") Long appId, @Param("conversationId") Long conversationId);
 
 }

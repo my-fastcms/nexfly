@@ -2,7 +2,7 @@ FROM alibabadragonwell/dragonwell:17-anolis
 
 WORKDIR /nexfly-system
 
-ARG JAR_FILE=target/nexfly-system-0.0.1-SNAPSHOT.jar
+ARG JAR_FILE=target/*.jar
 
 COPY ${JAR_FILE} app.jar
 

@@ -43,9 +43,12 @@
       </if>
     </set>
     where message_id = #{appMessage.messageId,jdbcType=BIGINT}
-     
+
   </update>
-  <select id="findById" resultMap="BaseResultMap">
+    <delete id="deleteByConversationId">
+      delete from app_message where app_id = #{appId} and conversation_id = #{conversationId}
+    </delete>
+    <select id="findById" resultMap="BaseResultMap">
     select <include refid="Vo_Column_List"/> from app_message where message_id = #{messageId}
   </select>
   <select id="getConversationLastNMessageList" resultMap="BaseResultMap">

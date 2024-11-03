@@ -32,11 +32,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.Assert;
 
 import java.io.InputStream;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 /**
  * @Author wangjun
@@ -162,7 +161,10 @@ public class DocumentServiceImpl implements DocumentService {
                 vectorStore.delete(contentIdList);
                 documentSegmentMapper.deleteByDocumentIds(Arrays.stream(new Long[] {doc.getDocumentId()}).toList());
             }
-            vectorStore.add(splitDocuments);
+
+            List<NexflyDocument> list = splitDocuments.stream().map(d -> new NexflyDocument(documentId, orgId, dataset.getDatasetId(), d.getId(), d.getContent())).toList();
+            List<org.springframework.ai.document.Document> documentList = list.stream().map(d -> (org.springframework.ai.document.Document) d).toList();
+            vectorStore.add(documentList);
 
             List<DocumentSegment> documentSegmentList = splitDocuments.stream().map(document -> {
                 DocumentSegment documentSegment = new DocumentSegment();
@@ -248,6 +250,92 @@ public class DocumentServiceImpl implements DocumentService {
             return fileName.substring(fileName.lastIndexOf("."));
         }
         return "";
+    }
+
+    static final class NexflyDocument extends org.springframework.ai.document.Document {
+
+        private Long documentId;
+
+        private Long orgId;
+
+        private Long datasetId;
+
+        private float[] embedding;
+
+        private Date createAt;
+
+        private Date updateAt;
+
+        public NexflyDocument(Long documentId, Long orgId, Long datasetId, String id, String content) {
+            super(id, content, Map.of());
+            this.documentId = documentId;
+            this.orgId = orgId;
+            this.datasetId = datasetId;
+            setCreateAt(new Date());
+            setUpdateAt(new Date());
+        }
+
+        public Long getDocumentId() {
+            return documentId;
+        }
+
+        public void setDocumentId(Long documentId) {
+            this.documentId = documentId;
+        }
+
+        public Long getOrgId() {
+            return orgId;
+        }
+
+        public void setOrgId(Long orgId) {
+            this.orgId = orgId;
+        }
+
+        public Long getDatasetId() {
+            return datasetId;
+        }
+
+        public void setDatasetId(Long datasetId) {
+            this.datasetId = datasetId;
+        }
+
+        public float[] getEmbedding() {
+            return this.embedding;
+        }
+
+        public void setEmbedding(float[] embedding) {
+            Assert.notNull(embedding, "embedding must not be null");
+            this.embedding = embedding;
+        }
+
+        public Date getCreateAt() {
+            return createAt;
+        }
+
+        public void setCreateAt(Date createAt) {
+            this.createAt = createAt;
+        }
+
+        public Date getUpdateAt() {
+            return updateAt;
+        }
+
+        public void setUpdateAt(Date updateAt) {
+            this.updateAt = updateAt;
+        }
+
+        @Override
+        public String toString() {
+            return "NexflyDocument{" +
+                    "contentId=" + getId() +
+                    "documentId=" + documentId +
+                    ", orgId=" + orgId +
+                    ", datasetId=" + datasetId +
+                    ", createAt=" + createAt +
+                    ", updateAt=" + updateAt +
+                    '}';
+        }
+
     }
 
 }
