@@ -17,6 +17,7 @@ import com.nexfly.system.model.Attachment;
 import com.nexfly.system.model.Dataset;
 import com.nexfly.system.model.Document;
 import com.nexfly.system.model.DocumentSegment;
+import com.nexfly.system.service.AttachmentService;
 import com.nexfly.system.service.DocumentService;
 import com.nexfly.system.service.SystemService;
 import org.apache.commons.lang3.StringUtils;
@@ -35,7 +36,10 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 
 import java.io.InputStream;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
 
 /**
  * @Author wangjun
@@ -68,6 +72,9 @@ public class DocumentServiceImpl implements DocumentService {
     @Autowired
     private OssFileManager ossFileManager;
 
+    @Autowired
+    private AttachmentService attachmentService;
+
     @Override
     public PageInfo<DocumentResponse> list(Long datasetId, Integer page, Integer pageSize) {
         Dataset dataset = datasetMapper.findById(datasetId);
@@ -94,18 +101,9 @@ public class DocumentServiceImpl implements DocumentService {
         if (dataset == null) {
             throw new NexflyException("dataset不存在");
         }
-        String object = ossFileManager.upload(uploadRequest.fileName(), uploadRequest.fileContentType(), uploadRequest.inputStream());
+        Attachment attachment = attachmentService.upload(uploadRequest.fileName(), uploadRequest.fileSize(), uploadRequest.fileContentType(), uploadRequest.inputStream());
 
-        Long orgId = systemService.getOrgId(AuthUtils.getUserId());
-        Attachment attachment = new Attachment();
-        attachment.setOrgId(orgId);
-        attachment.setFileName(uploadRequest.fileName());
-        attachment.setPath(object);
-        attachment.setSize(uploadRequest.fileSize());
-        attachment.setType(Objects.requireNonNull(getFileNameSuffix(uploadRequest.fileName())));
-        attachmentMapper.save(attachment);
-
-        Document doc = getDocument(attachment, orgId, dataset);
+        Document doc = getDocument(attachment, systemService.getOrgId(AuthUtils.getUserId()), dataset);
         documentMapper.save(doc);
     }
 

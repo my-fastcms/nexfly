@@ -5,9 +5,11 @@ import com.nexfly.api.system.bean.AppSaveRequest;
 import com.nexfly.common.core.exception.NexflyException;
 import com.nexfly.system.model.App;
 import com.nexfly.system.model.AppConversation;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.ai.chat.metadata.ChatResponseMetadata;
 import reactor.core.publisher.Flux;
 
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -17,6 +19,8 @@ import java.util.List;
  **/
 public interface AppService {
 
+    Flux<AppService.ChatResponse> chat(NexflyMessage message) throws Exception;
+
     Boolean save(AppSaveRequest appParam) throws NexflyException;
 
     AppEditResponse findById(Long appId);
@@ -24,8 +28,6 @@ public interface AppService {
     List<App> list(Long userId);
 
     void saveOrUpdate(App app);
-
-    Flux<AppService.ChatResponse> chat(NexflyMessage message) throws Exception;
 
     List<AppConversation> getAppConversationList(Long appId);
 
@@ -51,7 +53,7 @@ public interface AppService {
 
     }
 
-    record ConversationMessage(String content, String role, String id) {
+    record ConversationMessage(String content, String role, String id, Long[] documentIds) {
 
     }
 
@@ -60,6 +62,10 @@ public interface AppService {
     }
 
     record Conversation(Long appId, Long conversationId, List<ConversationMessage> message) {
+
+    }
+
+    record UploadRequest(@NotNull Long conversationId, @NotNull String fileName, @NotNull String fileContentType, Long fileSize, @NotNull InputStream inputStream) {
 
     }
 

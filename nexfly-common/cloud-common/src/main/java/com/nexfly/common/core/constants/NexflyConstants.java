@@ -6,6 +6,10 @@ public interface NexflyConstants {
 
     String USER_ID = "userId";
 
+    String DATASET_ID = "datasetId";
+
+    String DOCUMENT_IDS = "documentIds";
+
     enum Status {
         /**
          * 本地上传

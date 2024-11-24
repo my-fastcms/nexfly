@@ -17,11 +17,8 @@ public class AppSaveRequest {
     String rerankModelId;
     String ttsModelId;
     PromptConfig promptConfig;
-
     Float similarityThreshold;
-
     Integer topN;
-
     Float vectorSimilarityWeight;
 
     public Long getAppId() {

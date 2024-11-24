@@ -6,16 +6,19 @@
     <result column="conversation_id" property="conversationId" />
     <result column="app_id" property="appId" />
     <result column="role" property="role" />
+    <result column="content" property="content" />
+    <result column="document_ids" property="documentIds"/>
     <result column="create_by" property="createBy" />
     <result column="create_at" property="createAt" />
     <result column="update_by" property="updateBy" />
     <result column="update_at" property="updateAt" />
   </resultMap>
   <sql id="Vo_Column_List">
-    `message_id`,`conversation_id`,`app_id`,`role`,`create_by`,`create_at`,`update_by`,`update_at`,`content`
+    `message_id`,`conversation_id`,`app_id`,`role`,`create_by`,`create_at`,`update_by`,`update_at`,`content`,`document_ids`
   </sql>
   <insert id="save">
-    insert into app_message (`message_id`,`conversation_id`,`app_id`,`role`,`create_by`,`update_by`,`content`) values (#{appMessage.messageId},#{appMessage.conversationId},#{appMessage.appId},#{appMessage.role},#{appMessage.createBy},#{appMessage.updateBy},#{appMessage.content})
+    insert into app_message (`message_id`,`conversation_id`,`app_id`,`role`,`create_by`,`update_by`,`content`,`document_ids`)
+    values (#{appMessage.messageId},#{appMessage.conversationId},#{appMessage.appId},#{appMessage.role},#{appMessage.createBy},#{appMessage.updateBy},#{appMessage.content},#{appMessage.documentIds})
   </insert>
   <update id="update">
     update app_message

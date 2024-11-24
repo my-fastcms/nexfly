@@ -15,6 +15,8 @@ public class AppMessage extends BaseModel implements Serializable {
 
     private String content;
 
+    private String documentIds;
+
     private static final long serialVersionUID = 1L;
 
     public Long getMessageId() {
@@ -55,6 +57,14 @@ public class AppMessage extends BaseModel implements Serializable {
 
     public void setContent(String content) {
         this.content = content;
+    }
+
+    public String getDocumentIds() {
+        return documentIds;
+    }
+
+    public void setDocumentIds(String documentIds) {
+        this.documentIds = documentIds;
     }
 
     @Override

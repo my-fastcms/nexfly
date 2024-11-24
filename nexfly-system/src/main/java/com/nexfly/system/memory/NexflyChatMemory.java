@@ -9,7 +9,11 @@ import org.springframework.ai.chat.messages.MessageType;
 import org.springframework.ai.chat.messages.UserMessage;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
+
+import static com.nexfly.common.core.constants.NexflyConstants.DOCUMENT_IDS;
 
 /**
  * @Author wangjun
@@ -17,11 +21,11 @@ import java.util.List;
  **/
 public class NexflyChatMemory implements ChatMemory {
 
-    private Long userId;
+    private final Long userId;
 
-    private Long appId;
+    private final Long appId;
 
-    private AppMessageMapper appMessageMapper;
+    private final AppMessageMapper appMessageMapper;
 
     public NexflyChatMemory(Long userId, Long appId, AppMessageMapper appMessageMapper) {
         this.userId = userId;
@@ -38,6 +42,11 @@ public class NexflyChatMemory implements ChatMemory {
         appMessage.setContent(message.getContent());
         appMessage.setCreateBy(userId);
         appMessage.setUpdateBy(userId);
+        Object o = message.getMetadata().get(DOCUMENT_IDS);
+        if (o != null) {
+            String documentIds = Arrays.stream(((Long[]) o)).map(String::valueOf).collect(Collectors.joining(","));
+            appMessage.setDocumentIds(documentIds);
+        }
         appMessageMapper.save(appMessage);
     }
 

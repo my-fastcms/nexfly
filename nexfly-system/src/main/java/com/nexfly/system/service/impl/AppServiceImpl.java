@@ -3,6 +3,8 @@ package com.nexfly.system.service.impl;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import com.nexfly.ai.common.advisor.NexflyPromptChatMemoryAdvisor;
+import com.nexfly.ai.common.advisor.NexflyQuestionAnswerAdvisor;
 import com.nexfly.ai.common.function.FunctionManager;
 import com.nexfly.ai.common.vectorstore.VectorStoreManager;
 import com.nexfly.api.system.bean.AppEditResponse;
@@ -11,6 +13,7 @@ import com.nexfly.api.system.bean.AppSaveRequest;
 import com.nexfly.common.auth.utils.AuthUtils;
 import com.nexfly.common.core.exception.NexflyException;
 import com.nexfly.common.core.utils.UuidUtil;
+import com.nexfly.oss.common.OssFileManager;
 import com.nexfly.system.manager.DefaultModelManager;
 import com.nexfly.system.manager.ModelManager;
 import com.nexfly.system.mapper.*;
@@ -18,32 +21,32 @@ import com.nexfly.system.memory.NexflyChatMemory;
 import com.nexfly.system.model.*;
 import com.nexfly.system.service.AppService;
 import com.nexfly.system.service.DatasetService;
+import jakarta.validation.constraints.NotNull;
 import org.apache.commons.lang3.StringUtils;
-import org.jetbrains.annotations.NotNull;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.client.advisor.AbstractChatMemoryAdvisor;
-import org.springframework.ai.chat.client.advisor.PromptChatMemoryAdvisor;
-import org.springframework.ai.chat.client.advisor.QuestionAnswerAdvisor;
-import org.springframework.ai.chat.client.advisor.SimpleLoggerAdvisor;
 import org.springframework.ai.chat.client.advisor.api.Advisor;
 import org.springframework.ai.chat.messages.Message;
 import org.springframework.ai.chat.messages.UserMessage;
 import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.ai.chat.prompt.SystemPromptTemplate;
 import org.springframework.ai.embedding.EmbeddingModel;
+import org.springframework.ai.model.Media;
+import org.springframework.ai.model.function.FunctionCallback;
+import org.springframework.ai.model.function.FunctionCallbackWrapper;
 import org.springframework.ai.vectorstore.SearchRequest;
-import org.springframework.ai.vectorstore.filter.FilterExpressionBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.InputStreamResource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.MimeTypeUtils;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.io.InputStream;
+import java.util.*;
 
+import static com.nexfly.common.core.constants.NexflyConstants.DOCUMENT_IDS;
 import static com.nexfly.common.core.constants.NexflyConstants.USER_ID;
 
 /**
@@ -85,6 +88,101 @@ public class AppServiceImpl implements AppService {
 
     @Autowired
     private ProviderModelMapper providerModelMapper;
+
+    @Autowired
+    private AttachmentMapper attachmentMapper;
+
+    @Autowired
+    private OssFileManager ossFileManager;
+
+    @Override
+    public Flux<ChatResponse> chat(@NotNull NexflyMessage message) throws Exception {
+
+        AppConversation appConversation = appConversationMapper.findById(message.conversationId());
+
+        App app = appMapper.findById(appConversation.getAppId());
+
+        // 查询app关联的大语言模型
+        ChatModel chatModel = modelManager.getChatModel(app.getAppId());
+
+        // 查找 app配置信息
+        AppConfig appConfig = appConfigMapper.findByAppId(app.getAppId());
+        // 系统消息提示词
+        String system = appConfig.getPrePrompt();
+        // 变量
+//        Map<String, Object> formVariable = getFormVariable(appConfig.getFormVariable());
+        SystemPromptTemplate systemPromptTemplate = new SystemPromptTemplate(system);
+        Message systemMessage = systemPromptTemplate.createMessage(); //formVariable.isEmpty() ? systemPromptTemplate.createMessage() : systemPromptTemplate.createMessage(formVariable);
+
+        List<Message> messageList = new ArrayList<>();
+        message.messages().forEach(m -> {
+            if (StringUtils.isNotBlank(m.content())) {
+                UserMessage userMessage = new UserMessage(m.content());
+                if (m.documentIds() != null) {
+                    userMessage.getMetadata().put(DOCUMENT_IDS, m.documentIds());
+                }
+                messageList.add(userMessage);
+            }
+        });
+
+        List<Media> mediaList = new ArrayList<>();
+        final Message userMessage = messageList.get(messageList.size() - 1);
+        Object obj = userMessage.getMetadata().get(DOCUMENT_IDS);
+        if (obj != null) {
+            Long[] documentIds = (Long[]) obj;
+            List<Long> documentIdList = Arrays.stream(documentIds).toList();
+            if (!documentIdList.isEmpty()) {
+                List<Attachment> attachmentList = attachmentMapper.getAttachmentListByIds(documentIdList);
+                for (Attachment attachment : attachmentList) {
+                    try (InputStream inputStream = ossFileManager.download(attachment.getPath())) {
+                        Media media = new Media(MimeTypeUtils.IMAGE_PNG, new InputStreamResource(inputStream));
+                        mediaList.add(media);
+                    }
+                }
+            }
+        }
+
+        // 查找app关联的数据集配置信息
+        List<Dataset> datasetList = datasetMapper.findDatasetListByAppId(app.getAppId());
+        // 根据dataset构建List<RequestResponseAdvisor>
+        List<Advisor> requestResponseAdvisorList = new ArrayList<>();
+//        requestResponseAdvisorList.add(new SimpleLoggerAdvisor());
+        requestResponseAdvisorList.add(new NexflyPromptChatMemoryAdvisor(new NexflyChatMemory(AuthUtils.getUserId(), app.getAppId(), appMessageMapper)));
+        for (Dataset dataset : datasetList) {
+            EmbeddingModel embeddingModel = modelManager.getEmbeddingModel(dataset.getDatasetId());
+            var qaAdvisor = new NexflyQuestionAnswerAdvisor(vectorStoreManager.getVectorStoreFactory().getVectorStore(embeddingModel),
+                    SearchRequest.defaults().withSimilarityThreshold(appConfig.getSimilarityThreshold()).withTopK(appConfig.getTopN())
+//                            .withFilterExpression(new FilterExpressionBuilder().eq(DATASET_ID, dataset.getDatasetId()).build())
+                            );
+            requestResponseAdvisorList.add(qaAdvisor);
+        }
+
+        return ChatClient.builder(chatModel)
+                .build()
+                .prompt()
+                .system(systemMessage.getContent())
+                .messages(messageList)
+                .user(r -> r.text(userMessage.getContent())
+                        .media(mediaList.toArray(new Media[0]))
+                )
+                .functions(functionManager.getFunctionList().stream().map(function -> FunctionCallbackWrapper.builder(function.function()).withName(function.name()).withDescription(function.description()).build()).toArray(FunctionCallback[]::new))
+                .functions(functionManager.getFunctionList().stream().map(functionInfo -> firstLetterToLowerCase(functionInfo.function().getClass().getSimpleName())).toArray(String[]::new))
+                .advisors(a -> a.param(USER_ID, AuthUtils.getUserId()).param(AbstractChatMemoryAdvisor.CHAT_MEMORY_CONVERSATION_ID_KEY, message.conversationId()))
+                .advisors(requestResponseAdvisorList)
+                .stream()
+                .chatResponse().map(r -> {
+                    if (r.getResult() == null || r.getResult().getOutput() == null
+                            || r.getResult().getOutput().getContent() == null) {
+                        return new ChatResponse("true");
+                    }
+                    return new ChatResponse(new ChatResponseData(r.getResult().getOutput().getContent(), r.getMetadata(), message.conversationId() + UuidUtil.getSimpleUuid()));
+                })
+                .onErrorResume(e -> {
+                    // 异常处理逻辑
+                    return Mono.just(new ChatResponse("Error occurred: " + e.getMessage()));
+                })
+                ;
+    }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -142,6 +240,13 @@ public class AppServiceImpl implements AppService {
         return true;
     }
 
+    private String firstLetterToLowerCase(String str) {
+        if (StringUtils.isBlank(str)) {
+            return str;
+        }
+        return Character.toLowerCase(str.charAt(0)) + str.substring(1);
+    }
+
     private void saveOrUpdateAppConfig(AppConfig appConfig) {
         if (appConfig.getConfigId() == null) {
             appConfigMapper.save(appConfig);
@@ -171,11 +276,6 @@ public class AppServiceImpl implements AppService {
             appModel = new AppModel();
             appModel.setAppId(app.getAppId());
         } else {
-            if (appModelInfo.getProviderName().equals(selectModel.provider)
-                    && appModelInfo.getModelName().equals(selectModel.modelName)
-                    && appModelInfo.getModelType().equals(selectModel.type)) {
-                return;
-            }
             appModel = appModelMapper.findById(appModelInfo.getAppModelId());
         }
         ProviderModel providerModel = providerModelMapper.getProviderModelByOrgAndName(app.getOrgId(), selectModel.provider, selectModel.modelName);
@@ -245,76 +345,6 @@ public class AppServiceImpl implements AppService {
     }
 
     @Override
-    public Flux<ChatResponse> chat(@NotNull NexflyMessage message) throws Exception {
-
-        AppConversation appConversation = appConversationMapper.findById(message.conversationId());
-
-        App app = appMapper.findById(appConversation.getAppId());
-
-        // 查询app关联的大语言模型
-        ChatModel chatModel = modelManager.getChatModel(app.getAppId());
-
-        // 查找 app配置信息
-        AppConfig appConfig = appConfigMapper.findByAppId(app.getAppId());
-        // 系统消息提示词
-        String system = appConfig.getPrePrompt();
-        // 变量
-//        Map<String, Object> formVariable = getFormVariable(appConfig.getFormVariable());
-        SystemPromptTemplate systemPromptTemplate = new SystemPromptTemplate(system);
-        Message systemMessage = systemPromptTemplate.createMessage(); //formVariable.isEmpty() ? systemPromptTemplate.createMessage() : systemPromptTemplate.createMessage(formVariable);
-
-        // 查找app关联的数据集配置信息
-        List<Dataset> datasetList = datasetMapper.findDatasetListByAppId(app.getAppId());
-        // 根据dataset构建List<RequestResponseAdvisor>
-        List<Advisor> requestResponseAdvisorList = new ArrayList<>();
-        requestResponseAdvisorList.add(new SimpleLoggerAdvisor());
-        requestResponseAdvisorList.add(new PromptChatMemoryAdvisor(new NexflyChatMemory(AuthUtils.getUserId(), app.getAppId(), appMessageMapper)));
-        for (Dataset dataset : datasetList) {
-            EmbeddingModel embeddingModel = modelManager.getEmbeddingModel(dataset.getDatasetId());
-            var qaAdvisor = new QuestionAnswerAdvisor(vectorStoreManager.getVectorStoreFactory().getVectorStore(embeddingModel),
-                    SearchRequest.defaults().withSimilarityThreshold(appConfig.getSimilarityThreshold()).withTopK(appConfig.getTopN())
-                            .withFilterExpression(new FilterExpressionBuilder().eq("datasetId", dataset.getDatasetId()).build())
-                            );
-            requestResponseAdvisorList.add(qaAdvisor);
-        }
-
-        List<Message> messageList = new ArrayList<>();
-        message.messages().forEach(m -> {
-            if (StringUtils.isNotBlank(m.content())) {
-                UserMessage userMessage = new UserMessage(m.content());
-                messageList.add(userMessage);
-            }
-        });
-
-        ChatClient.ChatClientRequestSpec chatClientRequestSpec = ChatClient.builder(chatModel)
-                .build()
-                .prompt()
-                .system(systemMessage.getContent())
-                .messages(messageList)
-                .user(messageList.get(messageList.size() - 1).getContent())
-                ;
-
-        functionManager.getFunctionList().forEach(item -> chatClientRequestSpec.function(item.name(), item.description(), item.function()));
-
-        return chatClientRequestSpec
-                .advisors(a -> a.param(USER_ID, AuthUtils.getUserId()).param(AbstractChatMemoryAdvisor.CHAT_MEMORY_CONVERSATION_ID_KEY, message.conversationId()))
-                .advisors(requestResponseAdvisorList)
-                .stream()
-                .chatResponse().map(r -> {
-                    if (r.getResult() == null || r.getResult().getOutput() == null
-                            || r.getResult().getOutput().getContent() == null) {
-                        return new ChatResponse("true");
-                    }
-                    return new ChatResponse(new ChatResponseData(r.getResult().getOutput().getContent(), r.getMetadata(), message.conversationId() + UuidUtil.getSimpleUuid()));
-                })
-                .onErrorResume(e -> {
-                    // 异常处理逻辑
-                    return Mono.just(new ChatResponse("Error occurred: " + e.getMessage()));
-                })
-                ;
-    }
-
-    @Override
     public List<AppConversation> getAppConversationList(Long appId) {
         return appConversationMapper.findListByAppId(appId);
     }
@@ -325,7 +355,9 @@ public class AppServiceImpl implements AppService {
         List<AppMessage> conversationLastNMessageList = appMessageMapper.getConversationLastNMessageList(appConversationId, 100);
 
         List<ConversationMessage> conversationMessageList = conversationLastNMessageList.stream().map(appMessage ->
-                new ConversationMessage(appMessage.getContent(), appMessage.getRole(), String.valueOf(appMessage.getMessageId()))).toList();
+                new ConversationMessage(appMessage.getContent(), appMessage.getRole(), String.valueOf(appMessage.getMessageId()),
+                        StringUtils.isBlank(appMessage.getDocumentIds()) ? null : Arrays.stream(appMessage.getDocumentIds().split(",")).toList().stream().map(Long::valueOf).toList().toArray(new Long[0])))
+                .toList();
 
         return new Conversation(appConversation.getAppId(), appConversation.getConversationId(), conversationMessageList);
     }
@@ -346,6 +378,7 @@ public class AppServiceImpl implements AppService {
         appMessageMapper.deleteByConversationId(appId, conversationId);
     }
 
+    @Deprecated
     Map<String, Object> getFormVariable(String formVariable) {
         JSONArray formVariableArray = JSON.parseArray(formVariable);
         Map<String, Object> map = new HashMap<>();

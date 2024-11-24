@@ -49,7 +49,19 @@
     where attachment_id = #{file.fileId,jdbcType=BIGINT}
      
   </update>
+  <delete id="deleteByIds">
+    delete from attachment where attachment_id in
+    <foreach collection="attachmentIds" item="attachmentId" open="(" separator="," close=")">
+      #{attachmentId}
+    </foreach>
+  </delete>
   <select id="findById" resultMap="BaseResultMap">
     select <include refid="Vo_Column_List"/> from attachment where attachment_id = #{fileId}
   </select>
+    <select id="getAttachmentListByIds" resultMap="BaseResultMap">
+      select <include refid="Vo_Column_List"/> from attachment where attachment_id in
+      <foreach collection="attachmentIds" item="attachmentId" open="(" separator="," close=")">
+        #{attachmentId}
+      </foreach>
+    </select>
 </mapper>
