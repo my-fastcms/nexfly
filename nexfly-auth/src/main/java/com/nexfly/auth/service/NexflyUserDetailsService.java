@@ -21,7 +21,7 @@ public class NexflyUserDetailsService implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        RestResult<SystemFeignClient.AccountInfo> accountResp = systemFeignClient.getAccountByEmail(username);
+        RestResult<SystemFeignClient.AccountInfo> accountResp = systemFeignClient.getAccountByUsername(username);
         SystemFeignClient.AccountInfo data = Optional.ofNullable(accountResp.getData()).orElseThrow();
         return new UserInfo(data.accountId(), data.email(), data.password(), Collections.synchronizedCollection(new ArrayList<>()));
     }

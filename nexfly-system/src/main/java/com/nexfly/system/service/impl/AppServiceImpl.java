@@ -4,7 +4,6 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.nexfly.ai.common.advisor.NexflyPromptChatMemoryAdvisor;
-import com.nexfly.ai.common.advisor.NexflyQuestionAnswerAdvisor;
 import com.nexfly.ai.common.function.FunctionManager;
 import com.nexfly.ai.common.vectorstore.VectorStoreManager;
 import com.nexfly.api.system.bean.AppEditResponse;
@@ -25,6 +24,7 @@ import jakarta.validation.constraints.NotNull;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.client.advisor.AbstractChatMemoryAdvisor;
+import org.springframework.ai.chat.client.advisor.QuestionAnswerAdvisor;
 import org.springframework.ai.chat.client.advisor.api.Advisor;
 import org.springframework.ai.chat.messages.Message;
 import org.springframework.ai.chat.messages.UserMessage;
@@ -46,8 +46,7 @@ import reactor.core.publisher.Mono;
 import java.io.InputStream;
 import java.util.*;
 
-import static com.nexfly.common.core.constants.NexflyConstants.DOCUMENT_IDS;
-import static com.nexfly.common.core.constants.NexflyConstants.USER_ID;
+import static com.nexfly.common.core.constants.NexflyConstants.*;
 
 /**
  * @Author wangjun
@@ -150,9 +149,10 @@ public class AppServiceImpl implements AppService {
         requestResponseAdvisorList.add(new NexflyPromptChatMemoryAdvisor(new NexflyChatMemory(AuthUtils.getUserId(), app.getAppId(), appMessageMapper)));
         for (Dataset dataset : datasetList) {
             EmbeddingModel embeddingModel = modelManager.getEmbeddingModel(dataset.getDatasetId());
-            var qaAdvisor = new NexflyQuestionAnswerAdvisor(vectorStoreManager.getVectorStoreFactory().getVectorStore(embeddingModel),
-                    SearchRequest.defaults().withSimilarityThreshold(appConfig.getSimilarityThreshold()).withTopK(appConfig.getTopN())
-//                            .withFilterExpression(new FilterExpressionBuilder().eq(DATASET_ID, dataset.getDatasetId()).build())
+            var qaAdvisor = new QuestionAnswerAdvisor(vectorStoreManager.getVectorStoreFactory().getVectorStore(SEGMENT_INDEX.concat(String.valueOf(dataset.getOrgId())), embeddingModel),
+                    SearchRequest.builder().similarityThreshold(appConfig.getSimilarityThreshold()).topK(appConfig.getTopN())
+//                            .filterExpression("datasetId == " + dataset.getDatasetId())
+                            .build()
                             );
             requestResponseAdvisorList.add(qaAdvisor);
         }
@@ -177,10 +177,7 @@ public class AppServiceImpl implements AppService {
                     }
                     return new ChatResponse(new ChatResponseData(r.getResult().getOutput().getContent(), r.getMetadata(), message.conversationId() + UuidUtil.getSimpleUuid()));
                 })
-                .onErrorResume(e -> {
-                    // 异常处理逻辑
-                    return Mono.just(new ChatResponse("Error occurred: " + e.getMessage()));
-                })
+                .onErrorResume(e -> Mono.just(new ChatResponse("Error occurred: " + e.getMessage())))
                 ;
     }
 
@@ -346,7 +343,7 @@ public class AppServiceImpl implements AppService {
 
     @Override
     public List<AppConversation> getAppConversationList(Long appId) {
-        return appConversationMapper.findListByAppId(appId);
+        return appConversationMapper.findListByAppId(appId, AuthUtils.getUserId());
     }
 
     @Override

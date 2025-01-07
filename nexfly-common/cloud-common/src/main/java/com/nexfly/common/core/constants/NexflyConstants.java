@@ -10,6 +10,10 @@ public interface NexflyConstants {
 
     String DOCUMENT_IDS = "documentIds";
 
+    String SEGMENT_INDEX = "segment_index_";
+
+    String DOCUMENT_INDEX = "document_index_";
+
     enum Status {
         /**
          * 本地上传

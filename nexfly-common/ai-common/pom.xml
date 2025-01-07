@@ -19,8 +19,8 @@
 
 
     <dependencies>
-
         <dependency>
+
             <groupId>com.nexfly</groupId>
             <artifactId>cloud-common</artifactId>
         </dependency>
@@ -94,10 +94,10 @@
             <artifactId>spring-ai-transformers</artifactId>
         </dependency>
 
-        <dependency>
+<!--        <dependency>
             <groupId>org.springframework.ai</groupId>
             <artifactId>spring-ai-vertex-ai-palm2</artifactId>
-        </dependency>
+        </dependency>-->
 
         <dependency>
             <groupId>org.springframework.ai</groupId>

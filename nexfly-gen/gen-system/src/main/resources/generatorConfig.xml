@@ -103,12 +103,18 @@
         </table>
         -->
 
+        <!--
         <table tableName="sys_provider">
             <generatedKey column="sys_provider_id" sqlStatement="MySql" identity="true"/>
         </table>
 
         <table tableName="sys_provider_model">
             <generatedKey column="sys_provider_model_id" sqlStatement="MySql" identity="true"/>
+        </table>
+        -->
+
+        <table tableName="account_openid">
+            <generatedKey column="openid_id" sqlStatement="MySql" identity="true"/>
         </table>
 
     </context>

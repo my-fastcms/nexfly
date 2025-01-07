@@ -16,14 +16,14 @@ import org.springframework.stereotype.Component;
 import java.io.IOException;
 import java.util.Objects;
 
+import static com.nexfly.common.core.constants.NexflyConstants.SEGMENT_INDEX;
+
 /**
  * @Author wangjun
  * @Date 2024/10/13
  **/
 @Component
 public class SegmentCanalListener extends BaseCanalBinlogEventProcessor<SegmentCanalResponse> {
-
-    public static final String SEGMENT_INDEX = "segment_index";
 
     private static final Logger log = LoggerFactory.getLogger(SegmentCanalListener.class);
 
@@ -48,10 +48,6 @@ public class SegmentCanalListener extends BaseCanalBinlogEventProcessor<SegmentC
      */
     @Override
     protected void processUpdateInternal(CanalBinLogResult<SegmentCanalResponse> result) {
-        SegmentCanalResponse beforeData = result.getBeforeData();
-        if (Objects.isNull(beforeData.getContent())) {
-            return;
-        }
         SegmentCanalResponse afterData = result.getAfterData();
         log.info(afterData.toString());
         try {
@@ -64,7 +60,7 @@ public class SegmentCanalListener extends BaseCanalBinlogEventProcessor<SegmentC
     // 同步数据到Elasticsearch的插入操作
     private void syncSegmentToElasticsearch(SegmentCanalResponse segment) throws IOException {
         IndexRequest<SegmentCanalResponse> request = IndexRequest.of(i -> i
-                .index(SEGMENT_INDEX)  // 索引名称
+                .index(SEGMENT_INDEX.concat(String.valueOf(segment.getOrgId())))  // 索引名称
                 .id(String.valueOf(segment.getContentId()))  // 使用contentId作为Elasticsearch文档ID
                 .document(segment)  // 文档内容，直接传入对象，Elasticsearch Java API Client会序列化为JSON
         );
@@ -75,7 +71,7 @@ public class SegmentCanalListener extends BaseCanalBinlogEventProcessor<SegmentC
     // 更新Elasticsearch中的数据
     private void processUpdateInternal(SegmentCanalResponse segment) throws IOException {
         UpdateRequest<SegmentCanalResponse, SegmentCanalResponse> request = UpdateRequest.of(u -> u
-                .index(SEGMENT_INDEX)  // 索引名称
+                .index(SEGMENT_INDEX.concat(String.valueOf(segment.getOrgId())))  // 索引名称
                 .id(String.valueOf(segment.getContentId()))  // 文档ID
                 .doc(segment)  // 更新的文档内容
                 .docAsUpsert(true)  // 如果文档不存在，则插入

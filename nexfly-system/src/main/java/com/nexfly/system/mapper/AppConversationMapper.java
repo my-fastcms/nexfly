@@ -7,7 +7,7 @@ import java.util.List;
 
 public interface AppConversationMapper {
 
-    List<AppConversation> findListByAppId(@Param("appId") Long appId);
+    List<AppConversation> findListByAppId(@Param("appId") Long appId, @Param("userId") Long userId);
 
     AppConversation findById(@Param("conversationId") Long conversationId);
 

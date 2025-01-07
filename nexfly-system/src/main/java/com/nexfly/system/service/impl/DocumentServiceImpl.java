@@ -41,6 +41,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
+import static com.nexfly.common.core.constants.NexflyConstants.SEGMENT_INDEX;
+
 /**
  * @Author wangjun
  * @Date 2024/8/25
@@ -150,7 +152,7 @@ public class DocumentServiceImpl implements DocumentService {
             List<org.springframework.ai.document.Document> splitDocuments = tokenTextSplitter.apply(documents);
             // 插入向量数据库
             EmbeddingModel embeddingModel = modelManager.getEmbeddingModel(dataset.getDatasetId());
-            VectorStore vectorStore = vectorStoreManager.getVectorStoreFactory().getVectorStore(embeddingModel);
+            VectorStore vectorStore = vectorStoreManager.getVectorStoreFactory().getVectorStore(SEGMENT_INDEX.concat(String.valueOf(orgId)), embeddingModel);
 
             // 如果向量数据库存在，先删除
             List<DocumentSegment> segmentList = documentSegmentMapper.getListByDocumentId(doc.getDocumentId());

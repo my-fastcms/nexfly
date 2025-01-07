@@ -48,6 +48,6 @@
     select <include refid="Vo_Column_List"/> from app_conversation where conversation_id = #{conversationId}
   </select>
     <select id="findListByAppId" resultMap="BaseResultMap">
-      select <include refid="Vo_Column_List"/> from app_conversation where app_id = #{appId} order by create_at desc
+      select <include refid="Vo_Column_List"/> from app_conversation where app_id = #{appId} and create_by = #{userId} order by create_at desc
     </select>
 </mapper>

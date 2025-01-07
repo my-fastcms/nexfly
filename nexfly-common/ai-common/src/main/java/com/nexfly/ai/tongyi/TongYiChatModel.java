@@ -24,11 +24,15 @@ import org.springframework.ai.chat.observation.DefaultChatModelObservationConven
 import org.springframework.ai.chat.prompt.ChatOptions;
 import org.springframework.ai.chat.prompt.ChatOptionsBuilder;
 import org.springframework.ai.chat.prompt.Prompt;
+import org.springframework.ai.model.Media;
 import org.springframework.ai.model.ModelOptionsUtils;
 import org.springframework.ai.model.function.FunctionCallback;
-import org.springframework.ai.model.function.FunctionCallbackContext;
+import org.springframework.ai.model.function.FunctionCallbackResolver;
+import org.springframework.ai.openai.api.OpenAiApi;
 import org.springframework.ai.openai.metadata.support.OpenAiResponseHeaderExtractor;
 import org.springframework.ai.retry.RetryUtils;
+import org.springframework.core.io.ByteArrayResource;
+import org.springframework.core.io.Resource;
 import org.springframework.http.ResponseEntity;
 import org.springframework.retry.support.RetryTemplate;
 import org.springframework.util.*;
@@ -73,20 +77,20 @@ public class TongYiChatModel extends AbstractToolCallSupport implements ChatMode
     }
 
     public TongYiChatModel(TongYiAiApi tongYiAiApi, TongYiChatOptions options,
-                           FunctionCallbackContext functionCallbackContext, RetryTemplate retryTemplate) {
-        this(tongYiAiApi, options, functionCallbackContext, List.of(), retryTemplate);
+                           FunctionCallbackResolver functionCallbackResolver, RetryTemplate retryTemplate) {
+        this(tongYiAiApi, options, functionCallbackResolver, List.of(), retryTemplate);
     }
 
     public TongYiChatModel(TongYiAiApi tongYiAiApi, TongYiChatOptions options,
-                           FunctionCallbackContext functionCallbackContext, List<FunctionCallback> toolFunctionCallbacks,
+                           FunctionCallbackResolver functionCallbackResolver, List<FunctionCallback> toolFunctionCallbacks,
                            RetryTemplate retryTemplate) {
-        this(tongYiAiApi, options, functionCallbackContext, toolFunctionCallbacks, retryTemplate, ObservationRegistry.NOOP);
+        this(tongYiAiApi, options, functionCallbackResolver, toolFunctionCallbacks, retryTemplate, ObservationRegistry.NOOP);
     }
 
     public TongYiChatModel(TongYiAiApi tongYiAiApi, TongYiChatOptions options,
-                           FunctionCallbackContext functionCallbackContext, List<FunctionCallback> toolFunctionCallbacks,
+                           FunctionCallbackResolver functionCallbackResolver, List<FunctionCallback> toolFunctionCallbacks,
                            RetryTemplate retryTemplate, ObservationRegistry observationRegistry) {
-        super(functionCallbackContext, options, toolFunctionCallbacks);
+        super(functionCallbackResolver, options, toolFunctionCallbacks);
 
         Assert.notNull(tongYiAiApi, "TongYiAiApi must not be null");
         Assert.notNull(options, "Options must not be null");
@@ -141,7 +145,7 @@ public class TongYiChatModel extends AbstractToolCallSupport implements ChatMode
                                 "finishReason", choice.finishReason() != null ? choice.finishReason().name() : "",
                                 "refusal", StringUtils.hasText(choice.message().refusal()) ? choice.message().refusal() : "");
                         // @formatter:on
-                        return buildGeneration(choice, metadata);
+                        return buildGeneration(choice, metadata, request);
                     }).toList();
 
                     // Non function calling.
@@ -210,7 +214,7 @@ public class TongYiChatModel extends AbstractToolCallSupport implements ChatMode
                                         "finishReason", choice.finishReason() != null ? choice.finishReason().name() : "",
                                         "refusal", StringUtils.hasText(choice.message().refusal()) ? choice.message().refusal() : "");
 
-                                return buildGeneration(choice, metadata);
+                                return buildGeneration(choice, metadata, request);
                             }).toList();
                             // @formatter:on
 
@@ -266,7 +270,7 @@ public class TongYiChatModel extends AbstractToolCallSupport implements ChatMode
         return CollectionUtils.toMultiValueMap(headers.entrySet().stream().collect(Collectors.toMap(Map.Entry::getKey, e -> List.of(e.getValue()))));
     }
 
-    private Generation buildGeneration(TongYiAiApi.ChatCompletion.Choice choice, Map<String, Object> metadata) {
+    private Generation buildGeneration(TongYiAiApi.ChatCompletion.Choice choice, Map<String, Object> metadata, TongYiAiApi.ChatCompletionRequest request) {
         List<AssistantMessage.ToolCall> toolCalls = choice.message().toolCalls() == null ? List.of()
                 : choice.message()
                 .toolCalls()
@@ -275,24 +279,26 @@ public class TongYiChatModel extends AbstractToolCallSupport implements ChatMode
                         toolCall.function().name(), toolCall.function().arguments()))
                 .toList();
 
-        if (toolCalls.size() > 1) {
-            // 处理流式情况下，function call 参数为空的问题
-            StringBuilder arguments = new StringBuilder();
-            AssistantMessage.ToolCall toolCall = toolCalls.get(0);
-            for (int i =1; i <toolCalls.size(); i++) {
-                AssistantMessage.ToolCall tc = toolCalls.get(i);
-                if (StringUtils.hasText(tc.arguments())) {
-                    arguments.append(tc.arguments());
-                }
+        String finishReason = (choice.finishReason() != null ? choice.finishReason().name() : "");
+        var generationMetadataBuilder = ChatGenerationMetadata.builder().finishReason(finishReason);
+
+        List<Media> media = new ArrayList<>();
+        String textContent = choice.message().content();
+        var audioOutput = choice.message().audioOutput();
+        if (audioOutput != null) {
+            String mimeType = String.format("audio/%s", request.audioParameters().format().name().toLowerCase());
+            byte[] audioData = Base64.getDecoder().decode(audioOutput.data());
+            Resource resource = new ByteArrayResource(audioData);
+            media.add(new Media(MimeTypeUtils.parseMimeType(mimeType), resource, audioOutput.id()));
+            if (!StringUtils.hasText(textContent)) {
+                textContent = audioOutput.transcript();
             }
-            toolCalls = new ArrayList<>();
-            toolCalls.add(new AssistantMessage.ToolCall(toolCall.id(), toolCall.type(), toolCall.name(), arguments.toString()));
+            generationMetadataBuilder.metadata("audioId", audioOutput.id());
+            generationMetadataBuilder.metadata("audioExpiresAt", audioOutput.expiresAt());
         }
 
-        var assistantMessage = new AssistantMessage(choice.message().content(), metadata, toolCalls);
-        String finishReason = (choice.finishReason() != null ? choice.finishReason().name() : "");
-        var generationMetadata = ChatGenerationMetadata.from(finishReason, null);
-        return new Generation(assistantMessage, generationMetadata);
+        var assistantMessage = new AssistantMessage(textContent, metadata, toolCalls, media);
+        return new Generation(assistantMessage, generationMetadataBuilder.build());
     }
 
     private ChatResponseMetadata from(TongYiAiApi.ChatCompletion result, RateLimit rateLimit) {
@@ -357,8 +363,14 @@ public class TongYiChatModel extends AbstractToolCallSupport implements ChatMode
                         return new TongYiAiApi.ChatCompletionMessage.ToolCall(toolCall.id(), toolCall.type(), function);
                     }).toList();
                 }
+                TongYiAiApi.ChatCompletionMessage.AudioOutput audioOutput = null;
+                if (!CollectionUtils.isEmpty(assistantMessage.getMedia())) {
+                    Assert.isTrue(assistantMessage.getMedia().size() == 1,
+                            "Only one media content is supported for assistant messages");
+                    audioOutput = new TongYiAiApi.ChatCompletionMessage.AudioOutput(assistantMessage.getMedia().get(0).getId(), null, null, null);
+                }
                 return List.of(new TongYiAiApi.ChatCompletionMessage(assistantMessage.getContent(),
-                        TongYiAiApi.ChatCompletionMessage.Role.ASSISTANT, null, null, toolCalls, null));
+                        TongYiAiApi.ChatCompletionMessage.Role.ASSISTANT, null, null, toolCalls, null, audioOutput));
             }
             else if (message.getMessageType() == MessageType.TOOL) {
                 ToolResponseMessage toolMessage = (ToolResponseMessage) message;
@@ -371,7 +383,7 @@ public class TongYiChatModel extends AbstractToolCallSupport implements ChatMode
                 return toolMessage.getResponses()
                         .stream()
                         .map(tr -> new TongYiAiApi.ChatCompletionMessage(tr.responseData(), TongYiAiApi.ChatCompletionMessage.Role.TOOL, tr.name(),
-                                tr.id(), null, null))
+                                tr.id(), null, null, null))
                         .toList();
             }
             else {

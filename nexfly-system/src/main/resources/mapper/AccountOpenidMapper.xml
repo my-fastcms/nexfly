@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.nexfly.system.mapper.AccountOpenidMapper">
+  <resultMap id="BaseResultMap" type="com.nexfly.system.model.AccountOpenid">
+    <id column="openid_id" property="openidId" />
+    <result column="openid" property="openid" />
+    <result column="client_id" property="clientId" />
+    <result column="username" property="username" />
+    <result column="create_at" property="createAt" />
+    <result column="update_at" property="updateAt" />
+  </resultMap>
+  <sql id="Vo_Column_List">
+    `openid_id`,`openid`,`client_id`,`username`,`create_at`,`update_at`
+  </sql>
+  <insert id="save">
+    insert into account_openid (`openid_id`,`openid`,`client_id`,`username`) values (#{accountOpenid.openidId},#{accountOpenid.openid},#{accountOpenid.clientId},#{accountOpenid.username})
+  </insert>
+  <update id="update">
+    update account_openid
+    <set>
+      <if test="accountOpenid.openid != null">
+        openid = #{accountOpenid.openid,jdbcType=VARCHAR},
+      </if>
+      <if test="accountOpenid.clientId != null">
+        client_id = #{accountOpenid.clientId,jdbcType=VARCHAR},
+      </if>
+      <if test="accountOpenid.username != null">
+        username = #{accountOpenid.username,jdbcType=VARCHAR},
+      </if>
+      <if test="accountOpenid.createAt != null">
+        create_at = #{accountOpenid.createAt,jdbcType=TIMESTAMP},
+      </if>
+      <if test="accountOpenid.updateAt != null">
+        update_at = #{accountOpenid.updateAt,jdbcType=TIMESTAMP},
+      </if>
+    </set>
+    where openid_id = #{accountOpenid.openidId,jdbcType=BIGINT}
+     
+  </update>
+  <select id="findById" resultMap="BaseResultMap">
+    select <include refid="Vo_Column_List"/> from account_openid where openid_id = #{openidId}
+  </select>
+</mapper>

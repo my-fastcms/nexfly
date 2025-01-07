@@ -21,9 +21,6 @@ import java.util.Map;
 })
 public class CreatorInterceptor implements Interceptor {
 
-    final String CREATEBY_METHOD = "setCreateBy";
-    final String UPDATEBY_METHOD = "setUpdateBy";
-
     @Override
     public Object intercept(Invocation invocation) throws Throwable {
 
@@ -53,15 +50,6 @@ public class CreatorInterceptor implements Interceptor {
                     setModelFieldValue(model);
                 }
             }
-
-            /*
-            if (AuthUtils.getUser() != null) {
-                Method method = parameter.getClass().getSuperclass().getMethod(CREATEBY_METHOD, Long.class);
-                method.invoke(parameter, AuthUtils.getUserId());
-                method = parameter.getClass().getSuperclass().getMethod(UPDATEBY_METHOD, Long.class);
-                method.invoke(parameter, AuthUtils.getUserId());
-            }
-            */
             return invocation.proceed();
         } catch (Exception e) {
             return invocation.proceed();

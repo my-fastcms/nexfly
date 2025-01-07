@@ -4,6 +4,8 @@ import com.nexfly.common.auth.model.UserInfo;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 
+import java.util.Objects;
+
 public final class AuthUtils {
 
     public static UserInfo getUser() {
@@ -12,7 +14,7 @@ public final class AuthUtils {
     }
 
     public static Long getUserId() {
-        return getUser().getUserId();
+        return Objects.requireNonNull(getUser()).getUserId();
     }
 
 }

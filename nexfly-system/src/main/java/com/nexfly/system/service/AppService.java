@@ -5,7 +5,7 @@ import com.nexfly.api.system.bean.AppSaveRequest;
 import com.nexfly.common.core.exception.NexflyException;
 import com.nexfly.system.model.App;
 import com.nexfly.system.model.AppConversation;
-import org.jetbrains.annotations.NotNull;
+import jakarta.validation.constraints.NotNull;
 import org.springframework.ai.chat.metadata.ChatResponseMetadata;
 import reactor.core.publisher.Flux;
 

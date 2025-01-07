@@ -1,12 +1,13 @@
 package com.nexfly.api.system.bean;
 
+import java.io.Serializable;
 import java.util.List;
 
 /**
  * @Author wangjun
  * @Date 2024/9/23
  **/
-public class AppSaveRequest {
+public class AppSaveRequest implements Serializable {
     Long appId;
     String description;
     String name;

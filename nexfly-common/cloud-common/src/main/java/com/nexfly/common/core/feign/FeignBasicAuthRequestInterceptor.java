@@ -33,4 +33,5 @@ public class FeignBasicAuthRequestInterceptor implements RequestInterceptor {
             template.header("Authorization", authorization);
         }
     }
+
 }

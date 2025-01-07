@@ -16,14 +16,14 @@ import org.springframework.stereotype.Component;
 import java.io.IOException;
 import java.util.Objects;
 
+import static com.nexfly.common.core.constants.NexflyConstants.DOCUMENT_INDEX;
+
 /**
  * @Author wangjun
  * @Date 2024/10/13
  **/
 @Component
 public class DocumentCanalListener extends BaseCanalBinlogEventProcessor<DocumentCanalResponse> {
-
-    public static final String DOCUMENT_INDEX = "document_index";
 
     private static final Logger log = LoggerFactory.getLogger(DocumentCanalListener.class);
 
@@ -32,12 +32,8 @@ public class DocumentCanalListener extends BaseCanalBinlogEventProcessor<Documen
 
     @Override
     protected void processInsertInternal(CanalBinLogResult<DocumentCanalResponse> documentResult) {
-        DocumentCanalResponse beforeData = documentResult.getBeforeData();
-        if (Objects.isNull(beforeData.getName())) {
-            return;
-        }
         try {
-            syncSegmentToElasticsearch(documentResult.getAfterData());
+            syncDocumentToElasticsearch(documentResult.getAfterData());
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -61,9 +57,9 @@ public class DocumentCanalListener extends BaseCanalBinlogEventProcessor<Documen
         }
     }
 
-    private void syncSegmentToElasticsearch(DocumentCanalResponse document) throws IOException {
+    private void syncDocumentToElasticsearch(DocumentCanalResponse document) throws IOException {
         IndexRequest<DocumentCanalResponse> request = IndexRequest.of(i -> i
-                .index(DOCUMENT_INDEX)  // 索引名称
+                .index(DOCUMENT_INDEX.concat(String.valueOf(document.getOrgId())))  // 索引名称
                 .id(String.valueOf(document.getDocumentId()))  // 使用segmentId作为Elasticsearch文档ID
                 .document(document)  // 文档内容，直接传入对象，Elasticsearch Java API Client会序列化为JSON
         );
@@ -74,7 +70,7 @@ public class DocumentCanalListener extends BaseCanalBinlogEventProcessor<Documen
     // 更新Elasticsearch中的数据
     private void processUpdateInternal(DocumentCanalResponse document) throws IOException {
         UpdateRequest<DocumentCanalResponse, DocumentCanalResponse> request = UpdateRequest.of(u -> u
-                .index(DOCUMENT_INDEX)  // 索引名称
+                .index(DOCUMENT_INDEX.concat(String.valueOf(document.getOrgId())))  // 索引名称
                 .id(String.valueOf(document.getDocumentId()))  // 文档ID
                 .doc(document)  // 更新的文档内容
                 .docAsUpsert(true)  // 如果文档不存在，则插入

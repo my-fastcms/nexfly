@@ -2,13 +2,15 @@ package com.nexfly.ai.common.vectorstore;
 
 import org.elasticsearch.client.RestClient;
 import org.springframework.ai.embedding.EmbeddingModel;
-import org.springframework.ai.vectorstore.ElasticsearchVectorStore;
-import org.springframework.ai.vectorstore.ElasticsearchVectorStoreOptions;
-import org.springframework.ai.vectorstore.SimilarityFunction;
+import org.springframework.ai.vectorstore.elasticsearch.ElasticsearchVectorStore;
+import org.springframework.ai.vectorstore.elasticsearch.ElasticsearchVectorStoreOptions;
+import org.springframework.ai.vectorstore.elasticsearch.SimilarityFunction;
 import org.springframework.ai.vectorstore.VectorStore;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
+
+import static com.nexfly.common.core.constants.NexflyConstants.SEGMENT_INDEX;
 
 /**
  * @Author wangjun
@@ -21,14 +23,14 @@ public class ElasticsearchVectorStoreFactory implements VectorStoreFactory {
     @Autowired
     private RestClient restClient;
 
-    public static final String SEGMENT_INDEX = "segment_index";
-
     @Override
     public VectorStore getVectorStore(String className, EmbeddingModel embeddingModel) throws Exception {
         ElasticsearchVectorStoreOptions options = new ElasticsearchVectorStoreOptions();
         options.setIndexName(className);
         options.setSimilarity(SimilarityFunction.dot_product);
-        return new ElasticsearchVectorStore(options, restClient, embeddingModel, true);
+        ElasticsearchVectorStore elasticsearchVectorStore = new ElasticsearchVectorStore(options, restClient, embeddingModel, true);
+        elasticsearchVectorStore.afterPropertiesSet();
+        return elasticsearchVectorStore;
     }
 
     @Override

@@ -21,6 +21,7 @@ import com.nexfly.ai.tongyi.api.TongYiAiApi.ChatCompletionChunk.ChunkChoice;
 import com.nexfly.ai.tongyi.api.TongYiAiApi.ChatCompletionMessage.ChatCompletionFunction;
 import com.nexfly.ai.tongyi.api.TongYiAiApi.ChatCompletionMessage.Role;
 import com.nexfly.ai.tongyi.api.TongYiAiApi.ChatCompletionMessage.ToolCall;
+import org.springframework.ai.openai.api.OpenAiApi;
 import org.springframework.util.CollectionUtils;
 
 import java.util.ArrayList;
@@ -87,6 +88,8 @@ public class TongYiStreamFunctionCallingHelper {
 		String name = (current.name() != null ? current.name() : previous.name());
 		String toolCallId = (current.toolCallId() != null ? current.toolCallId() : previous.toolCallId());
 		String refusal = (current.refusal() != null ? current.refusal() : previous.refusal());
+		ChatCompletionMessage.AudioOutput audioOutput = (current.audioOutput() != null ? current.audioOutput()
+				: previous.audioOutput());
 
 		List<ToolCall> toolCalls = new ArrayList<>();
 		ToolCall lastPreviousTooCall = null;
@@ -116,7 +119,7 @@ public class TongYiStreamFunctionCallingHelper {
 				toolCalls.add(lastPreviousTooCall);
 			}
 		}
-		return new ChatCompletionMessage(content, role, name, toolCallId, toolCalls, refusal);
+		return new ChatCompletionMessage(content, role, name, toolCallId, toolCalls, refusal, audioOutput);
 	}
 
 	private ToolCall merge(ToolCall previous, ToolCall current) {

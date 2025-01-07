@@ -1,11 +1,15 @@
 package com.nexfly.system.service;
 
+import com.nexfly.api.system.bean.Oauth2UserInfo;
+import com.nexfly.api.system.feign.SystemFeignClient;
 import com.nexfly.system.model.Account;
 
 import java.io.Serializable;
 import java.util.List;
 
 public interface SystemService {
+
+    Account getAccountByUsername(String username);
 
     Account getAccountByEmail(String email);
 
@@ -18,6 +22,8 @@ public interface SystemService {
     Long getOrgId(Long userId);
 
     Boolean update(AccountUpdateRequest accountUpdateRequest);
+
+    SystemFeignClient.AccountInfo oauth2Login(Oauth2UserInfo oauth2UserInfo);
 
     record AccountUpdateRequest(String avatar, String color_schema, String language, String nickname, String timezone) {
 

@@ -1,10 +1,12 @@
 package com.nexfly.api.system.bean;
 
+import java.io.Serializable;
+
 /**
  * @Author wangjun
  * @Date 2024/9/23
  **/
-public class AppModelInfo {
+public class AppModelInfo implements Serializable {
 
     private Long appModelId;
     private Long appId;

@@ -1,5 +1,6 @@
 package com.nexfly.ai.tongyi.api;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.springframework.ai.model.ChatModelDescription;
@@ -25,6 +26,13 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Predicate;
 
+/**
+ * Single class implementation of the TongYi Chat Completion API and Embedding API.
+ * <a href="https://help.aliyun.com/zh/model-studio/developer-reference/use-qwen-by-calling-api">TongYi Docs</a>
+ *
+ * @author wangjun
+ * @since 1.0
+ */
 public class TongYiAiApi {
 
     public static final String DEFAULT_CHAT_MODEL = ChatModel.QWEN_TURBO.getValue();
@@ -174,7 +182,8 @@ public class TongYiAiApi {
             @JsonProperty("tools") List<FunctionTool> tools,
             @JsonProperty("tool_choice") Object toolChoice,
             @JsonProperty("user") String user,
-            @JsonProperty("enable_search") Boolean enableSearch) {
+            @JsonProperty("enable_search") Boolean enableSearch,
+            @JsonProperty("audio") AudioParameters audioParameters) {
 
         /**
          * Shortcut constructor for a chat completion request with the given messages and model.
@@ -184,7 +193,7 @@ public class TongYiAiApi {
          * @param temperature What sampling temperature to use, between 0 and 1.
          */
         public ChatCompletionRequest(List<ChatCompletionMessage> messages, String model, Double temperature) {
-            this(messages, model, null,  null, null, false, null, temperature, null, null, null, null, null, null);
+            this(messages, model, null,  null, null, false, null, temperature, null, null, null, null, null, null, null);
         }
 
         /**
@@ -198,7 +207,7 @@ public class TongYiAiApi {
          */
         public ChatCompletionRequest(List<ChatCompletionMessage> messages, String model, Double temperature, boolean stream) {
             this(messages, model, null,  null, null, stream, null, temperature, null,
-                    null, null, null, null, null);
+                    null, null, null, null, null, null);
         }
 
         /**
@@ -212,7 +221,7 @@ public class TongYiAiApi {
          */
         public ChatCompletionRequest(List<ChatCompletionMessage> messages, String model,
                                      List<FunctionTool> tools, Object toolChoice) {
-            this(messages, model, null, null, null, false, null, 0.8d, null, null, tools, toolChoice, null, null);
+            this(messages, model, null, null, null, false, null, 0.8d, null, null, tools, toolChoice, null, null, null);
         }
 
         /**
@@ -224,12 +233,12 @@ public class TongYiAiApi {
          * as they become available, with the stream terminated by a data: [DONE] message.
          */
         public ChatCompletionRequest(List<ChatCompletionMessage> messages, Boolean stream) {
-            this(messages, null, null,  null, null,  stream, null, null,  null, null, null, null, null, null);
+            this(messages, null, null,  null, null,  stream, null, null,  null, null, null, null, null, null, null);
         }
 
         public ChatCompletionRequest withStreamOptions(ChatCompletionRequest.StreamOptions streamOptions) {
             return new ChatCompletionRequest(messages, model, maxTokens, seed, stop, stream, streamOptions, temperature, presencePenalty, topP,
-                    tools, toolChoice, user, enableSearch);
+                    tools, toolChoice, user, enableSearch, null);
         }
 
         /**
@@ -250,6 +259,51 @@ public class TongYiAiApi {
              */
             public static Object function(String functionName) {
                 return Map.of("type", "function", "function", Map.of("name", functionName));
+            }
+        }
+
+        /**
+         * Parameters for audio output. Required when audio output is requested with outputModalities: ["audio"].
+         * @param voice Specifies the voice type.
+         * @param format Specifies the output audio format.
+         */
+        @JsonInclude(JsonInclude.Include.NON_NULL)
+        public record AudioParameters(
+                @JsonProperty("voice") AudioParameters.Voice voice,
+                @JsonProperty("format") AudioParameters.AudioResponseFormat format) {
+
+            /**
+             * Specifies the voice type.
+             */
+            public enum Voice {
+                /** Alloy voice */
+                @JsonProperty("alloy") ALLOY,
+                /** Echo voice */
+                @JsonProperty("echo") ECHO,
+                /** Fable voice */
+                @JsonProperty("fable") FABLE,
+                /** Onyx voice */
+                @JsonProperty("onyx") ONYX,
+                /** Nova voice */
+                @JsonProperty("nova") NOVA,
+                /** Shimmer voice */
+                @JsonProperty("shimmer") SHIMMER
+            }
+
+            /**
+             * Specifies the output audio format.
+             */
+            public enum AudioResponseFormat {
+                /** MP3 format */
+                @JsonProperty("mp3") MP3,
+                /** FLAC format */
+                @JsonProperty("flac") FLAC,
+                /** OPUS format */
+                @JsonProperty("opus") OPUS,
+                /** PCM16 format */
+                @JsonProperty("pcm16") PCM16,
+                /** WAV format */
+                @JsonProperty("wav") WAV
             }
         }
 
@@ -277,8 +331,10 @@ public class TongYiAiApi {
             @JsonProperty("role") ChatCompletionMessage.Role role,
             @JsonProperty("name") String name,
             @JsonProperty("tool_call_id") String toolCallId,
-            @JsonProperty("tool_calls") List<ChatCompletionMessage.ToolCall> toolCalls,
-            @JsonProperty("refusal") String refusal) {
+            @JsonProperty("tool_calls")
+            @JsonFormat(with = JsonFormat.Feature.ACCEPT_SINGLE_VALUE_AS_ARRAY) List<ChatCompletionMessage.ToolCall> toolCalls,
+            @JsonProperty("refusal") String refusal,
+            @JsonProperty("audio") AudioOutput audioOutput) {
 
         /**
          * Get message content as String.
@@ -298,8 +354,8 @@ public class TongYiAiApi {
          * @param content The contents of the message.
          * @param role The role of the author of this message.
          */
-        public ChatCompletionMessage(Object content, ChatCompletionMessage.Role role) {
-            this(content, role, null, null, null, null);
+        public ChatCompletionMessage(Object content, Role role) {
+            this(content, role, null, null, null, null, null);
         }
 
         /**
@@ -338,39 +394,63 @@ public class TongYiAiApi {
         public record MediaContent(
                 @JsonProperty("type") String type,
                 @JsonProperty("text") String text,
-                @JsonProperty("image_url") ChatCompletionMessage.MediaContent.ImageUrl imageUrl) {
-
-            /**
-             * @param url Either a URL of the image or the base64 encoded image data.
-             * The base64 encoded image data must have a special prefix in the following format:
-             * "data:{mimetype};base64,{base64-encoded-image-data}".
-             * @param detail Specifies the detail level of the image.
-             */
-            @JsonInclude(JsonInclude.Include.NON_NULL)
-            public record ImageUrl(
-                    @JsonProperty("url") String url,
-                    @JsonProperty("detail") String detail) {
-
-                public ImageUrl(String url) {
-                    this(url, null);
-                }
-            }
+                @JsonProperty("image_url") ImageUrl imageUrl,
+                @JsonProperty("input_audio") InputAudio inputAudio) {
 
             /**
              * Shortcut constructor for a text content.
              * @param text The text content of the message.
              */
             public MediaContent(String text) {
-                this("text", text, null);
+                this("text", text, null, null);
             }
 
             /**
              * Shortcut constructor for an image content.
              * @param imageUrl The image content of the message.
              */
-            public MediaContent(ChatCompletionMessage.MediaContent.ImageUrl imageUrl) {
-                this("image_url", null, imageUrl);
+            public MediaContent(ImageUrl imageUrl) {
+                this("image_url", null, imageUrl, null);
             }
+
+            /**
+             * Shortcut constructor for an audio content.
+             * @param inputAudio The audio content of the message.
+             */
+            public MediaContent(InputAudio inputAudio) {
+                this("input_audio", null, null, inputAudio);
+            }
+
+            @JsonInclude(JsonInclude.Include.NON_NULL)
+            public record InputAudio(// @formatter:off
+                                     @JsonProperty("data") String data,
+                                     @JsonProperty("format") InputAudio.Format format) {
+
+                public enum Format {
+                    /** MP3 audio format */
+                    @JsonProperty("mp3") MP3,
+                    /** WAV audio format */
+                    @JsonProperty("wav") WAV
+                } // @formatter:on
+            }
+
+            /**
+             * Shortcut constructor for an image content.
+             *
+             * @param url Either a URL of the image or the base64 encoded image data. The
+             * base64 encoded image data must have a special prefix in the following
+             * format: "data:{mimetype};base64,{base64-encoded-image-data}".
+             * @param detail Specifies the detail level of the image.
+             */
+            @JsonInclude(JsonInclude.Include.NON_NULL)
+            public record ImageUrl(@JsonProperty("url") String url, @JsonProperty("detail") String detail) {
+
+                public ImageUrl(String url) {
+                    this(url, null);
+                }
+
+            }
+
         }
         /**
          * The relevant tool call.
@@ -398,6 +478,25 @@ public class TongYiAiApi {
                 @JsonProperty("name") String name,
                 @JsonProperty("arguments") String arguments) {
         }
+
+        /**
+         * Audio response from the model.
+         *
+         * @param id Unique identifier for the audio response from the model.
+         * @param data Audio output from the model.
+         * @param expiresAt When the audio content will no longer be available on the
+         * server.
+         * @param transcript Transcript of the audio output from the model.
+         */
+        @JsonInclude(JsonInclude.Include.NON_NULL)
+        public record AudioOutput(// @formatter:off
+                                  @JsonProperty("id") String id,
+                                  @JsonProperty("data") String data,
+                                  @JsonProperty("expires_at") Long expiresAt,
+                                  @JsonProperty("transcript") String transcript
+        ) { // @formatter:on
+        }
+
     }
 
     public static String getTextContent(List<ChatCompletionMessage.MediaContent> content) {

@@ -53,7 +53,7 @@ services:
     container_name: nexfly-redis
     command: redis-server --requirepass ${REDIS_PASSWORD} --maxmemory 128mb --maxmemory-policy allkeys-lru
     ports:
-      - ${REDIS_PORT}:6378
+      - ${REDIS_PORT}:6379
     volumes:
       - nf_redis_data:/data
     networks:

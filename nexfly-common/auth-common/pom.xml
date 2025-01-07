@@ -11,22 +11,12 @@
 
     <artifactId>auth-common</artifactId>
 
-<!--    <properties>
-        <spring.authorization.version>1.2.4</spring.authorization.version>
-    </properties>-->
-
     <dependencies>
 
         <dependency>
             <groupId>com.nexfly</groupId>
             <artifactId>cloud-common</artifactId>
         </dependency>
-
-<!--        <dependency>
-            <groupId>org.springframework.security</groupId>
-            <artifactId>spring-security-oauth2-authorization-server</artifactId>
-            <version>${spring.authorization.version}</version>
-        </dependency>-->
 
         <dependency>
             <groupId>org.springframework.security</groupId>

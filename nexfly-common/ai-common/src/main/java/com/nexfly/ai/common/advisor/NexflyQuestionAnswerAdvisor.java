@@ -62,7 +62,7 @@ public class NexflyQuestionAnswerAdvisor implements CallAroundAdvisor, StreamAro
      * @param vectorStore The vector store to use
      */
     public NexflyQuestionAnswerAdvisor(VectorStore vectorStore) {
-        this(vectorStore, SearchRequest.defaults(), DEFAULT_USER_TEXT_ADVISE);
+        this(vectorStore, SearchRequest.builder().build(), DEFAULT_USER_TEXT_ADVISE);
     }
 
     /**
@@ -187,8 +187,9 @@ public class NexflyQuestionAnswerAdvisor implements CallAroundAdvisor, StreamAro
 
         // 1. 搜索相似文档
         var searchRequestToUse = SearchRequest.from(this.searchRequest)
-                .withQuery(request.userText())
-                .withFilterExpression(doGetFilterExpression(context));
+                .query(request.userText())
+                .filterExpression(doGetFilterExpression(context))
+                .build();
 
         List<Document> documents = this.vectorStore.similaritySearch(searchRequestToUse);
 
@@ -213,9 +214,9 @@ public class NexflyQuestionAnswerAdvisor implements CallAroundAdvisor, StreamAro
 
         // 5. 更新请求
         AdvisedRequest advisedRequest = AdvisedRequest.from(request)
-                .withUserText(advisedUserText)
-                .withUserParams(advisedUserParams)
-                .withAdviseContext(context)
+                .userText(advisedUserText)
+                .userParams(advisedUserParams)
+                .adviseContext(context)
                 .build();
 
         return advisedRequest;
@@ -261,7 +262,7 @@ public class NexflyQuestionAnswerAdvisor implements CallAroundAdvisor, StreamAro
 
         private final VectorStore vectorStore;
 
-        private SearchRequest searchRequest = SearchRequest.defaults();
+        private SearchRequest searchRequest = SearchRequest.builder().build();
 
         private String userTextAdvise = DEFAULT_USER_TEXT_ADVISE;
 
