@@ -12,8 +12,8 @@ public class OllamaEmbeddingModelFactory extends AbstractModelFactory {
     @Override
     Object doCreate(CreateModel createModel, JSONObject jsonObject) {
         return OllamaEmbeddingModel.builder()
-                .withOllamaApi(new OllamaApi(getApiUrl()))
-                .withDefaultOptions(OllamaOptions.create().withModel(createModel.getModelName()))
+                .ollamaApi(new OllamaApi(getApiUrl()))
+                .defaultOptions(OllamaOptions.builder().model(createModel.getModelName()).build())
                 .build();
     }
 

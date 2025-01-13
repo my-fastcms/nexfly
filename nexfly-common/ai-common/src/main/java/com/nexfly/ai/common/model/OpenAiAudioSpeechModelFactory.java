@@ -11,7 +11,7 @@ public class OpenAiAudioSpeechModelFactory extends AbstractModelFactory {
 
     @Override
     Object doCreate(CreateModel createModel, JSONObject jsonObject) {
-        return new OpenAiAudioSpeechModel(new OpenAiAudioApi(getApiKey()), OpenAiAudioSpeechOptions.builder().withModel(getModelName()).build());
+        return new OpenAiAudioSpeechModel(new OpenAiAudioApi(getApiKey()), OpenAiAudioSpeechOptions.builder().model(getModelName()).build());
     }
 
 }

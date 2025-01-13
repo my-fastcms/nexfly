@@ -12,7 +12,7 @@ public class ZhipuImageModelFactory extends AbstractModelFactory {
 
     @Override
     Object doCreate(CreateModel createModel, JSONObject jsonObject) {
-        return new ZhiPuAiImageModel(new ZhiPuAiImageApi(getApiKey()), ZhiPuAiImageOptions.builder().withModel(createModel.getModelName()).build(), RetryUtils.DEFAULT_RETRY_TEMPLATE);
+        return new ZhiPuAiImageModel(new ZhiPuAiImageApi(getApiKey()), ZhiPuAiImageOptions.builder().model(createModel.getModelName()).build(), RetryUtils.DEFAULT_RETRY_TEMPLATE);
     }
 
 }

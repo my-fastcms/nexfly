@@ -265,7 +265,7 @@
                     <configuration>
                         <images>
                             <image>
-                                <name>wangjun/${project.name}:${project.version}</name>
+                                <name>registry.cn-shenzhen.aliyuncs.com/nexfly/${project.name}:${project.version}</name>
                                 <build>
                                     <dockerFile>${project.basedir}/Dockerfile</dockerFile>
                                 </build>

@@ -22,13 +22,11 @@ import org.springframework.ai.chat.observation.ChatModelObservationConvention;
 import org.springframework.ai.chat.observation.ChatModelObservationDocumentation;
 import org.springframework.ai.chat.observation.DefaultChatModelObservationConvention;
 import org.springframework.ai.chat.prompt.ChatOptions;
-import org.springframework.ai.chat.prompt.ChatOptionsBuilder;
 import org.springframework.ai.chat.prompt.Prompt;
 import org.springframework.ai.model.Media;
 import org.springframework.ai.model.ModelOptionsUtils;
 import org.springframework.ai.model.function.FunctionCallback;
 import org.springframework.ai.model.function.FunctionCallbackResolver;
-import org.springframework.ai.openai.api.OpenAiApi;
 import org.springframework.ai.openai.metadata.support.OpenAiResponseHeaderExtractor;
 import org.springframework.ai.retry.RetryUtils;
 import org.springframework.core.io.ByteArrayResource;
@@ -304,13 +302,13 @@ public class TongYiChatModel extends AbstractToolCallSupport implements ChatMode
     private ChatResponseMetadata from(TongYiAiApi.ChatCompletion result, RateLimit rateLimit) {
         Assert.notNull(result, "TongYiAi ChatCompletionResult must not be null");
         var builder = ChatResponseMetadata.builder()
-                .withId(result.id() != null ? result.id() : "")
-                .withUsage(result.usage() != null ? TongYiAiUsage.from(result.usage()) : new EmptyUsage())
-                .withModel(result.model() != null ? result.model() : "")
-                .withKeyValue("created", result.created() != null ? result.created() : 0L)
-                .withKeyValue("system-fingerprint", result.systemFingerprint() != null ? result.systemFingerprint() : "");
+                .id(result.id() != null ? result.id() : "")
+                .usage(result.usage() != null ? TongYiAiUsage.from(result.usage()) : new EmptyUsage())
+                .model(result.model() != null ? result.model() : "")
+                .keyValue("created", result.created() != null ? result.created() : 0L)
+                .keyValue("system-fingerprint", result.systemFingerprint() != null ? result.systemFingerprint() : "");
         if (rateLimit != null) {
-            builder.withRateLimit(rateLimit);
+            builder.rateLimit(rateLimit);
         }
         return builder.build();
     }
@@ -451,12 +449,12 @@ public class TongYiChatModel extends AbstractToolCallSupport implements ChatMode
     }
 
     private ChatOptions buildRequestOptions(TongYiAiApi.ChatCompletionRequest request) {
-        return ChatOptionsBuilder.builder()
-                .withModel(request.model())
-                .withMaxTokens(request.maxTokens())
-                .withStopSequences(request.stop())
-                .withTemperature(request.temperature())
-                .withTopP(request.topP())
+        return ChatOptions.builder()
+                .model(request.model())
+                .maxTokens(request.maxTokens())
+                .stopSequences(request.stop())
+                .temperature(request.temperature())
+                .topP(request.topP())
                 .build();
     }
 

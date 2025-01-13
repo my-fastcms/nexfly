@@ -15,8 +15,8 @@ public class OllamaChatModelFactory extends AbstractModelFactory {
     @Override
     Object doCreate(CreateModel createModel, JSONObject jsonObject) {
         return OllamaChatModel.builder()
-                .withOllamaApi(new OllamaApi(getApiUrl()))
-                .withDefaultOptions(OllamaOptions.create().withModel(createModel.getModelName()).withTemperature(0.9))
+                .ollamaApi(new OllamaApi(getApiUrl()))
+                .defaultOptions(OllamaOptions.builder().model(createModel.getModelName()).temperature(0.9).build())
                 .build();
     }
 

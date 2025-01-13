@@ -162,7 +162,7 @@ public class DocumentServiceImpl implements DocumentService {
                 documentSegmentMapper.deleteByDocumentIds(Arrays.stream(new Long[] {doc.getDocumentId()}).toList());
             }
 
-            List<NexflyDocument> list = splitDocuments.stream().map(d -> new NexflyDocument(documentId, orgId, dataset.getDatasetId(), d.getId(), d.getContent())).toList();
+            List<NexflyDocument> list = splitDocuments.stream().map(d -> new NexflyDocument(documentId, orgId, dataset.getDatasetId(), d.getId(), d.getText())).toList();
             List<org.springframework.ai.document.Document> documentList = list.stream().map(d -> (org.springframework.ai.document.Document) d).toList();
             vectorStore.add(documentList);
 
@@ -172,7 +172,7 @@ public class DocumentServiceImpl implements DocumentService {
                 documentSegment.setDatasetId(doc.getDatasetId());
                 documentSegment.setContentId(document.getId());
                 documentSegment.setDocumentId(doc.getDocumentId());
-                documentSegment.setContent(document.getContent());
+                documentSegment.setContent(document.getText());
                 documentSegment.setStatus(NexflyConstants.Status.NORMAL.getValue());
                 return documentSegment;
             }).toList();

@@ -1,0 +1,13 @@
+docker login
+
+docker tag [ImageId] registry.cn-shenzhen.aliyuncs.com/nexfly/nexfly-auth:[镜像版本号]
+docker push registry.cn-shenzhen.aliyuncs.com/nexfly/nexfly-auth:[镜像版本号]
+
+docker tag [ImageId] registry.cn-shenzhen.aliyuncs.com/nexfly/nexfly-gateway:[镜像版本号]
+docker push registry.cn-shenzhen.aliyuncs.com/nexfly/nexfly-gateway:[镜像版本号]
+
+docker tag [ImageId] registry.cn-shenzhen.aliyuncs.com/nexfly/nexfly-system:[镜像版本号]
+docker push registry.cn-shenzhen.aliyuncs.com/nexfly/nexfly-system:[镜像版本号]
+
+docker tag [ImageId] registry.cn-shenzhen.aliyuncs.com/nexfly/nexfly-web:[镜像版本号]
+docker push registry.cn-shenzhen.aliyuncs.com/nexfly/nexfly-web:[镜像版本号]

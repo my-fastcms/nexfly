@@ -41,11 +41,7 @@ public class WeaviateVectorStoreFactory implements VectorStoreFactory {
         if (!weaviateClient.schema().exists().withClassName(className).run().getResult()) {
             weaviateClient.schema().classCreator().withClass(newClass).run();
         }
-        WeaviateVectorStore.WeaviateVectorStoreConfig config = WeaviateVectorStore.WeaviateVectorStoreConfig.builder().withObjectClass(className)
-//                .withFilterableMetadataFields(List.of(WeaviateVectorStore.WeaviateVectorStoreConfig.MetadataField.text("content"), WeaviateVectorStore.WeaviateVectorStoreConfig.MetadataField.text("metadata")))
-                .withConsistencyLevel(WeaviateVectorStore.WeaviateVectorStoreConfig.ConsistentLevel.ONE)
-                .build();
-        return new WeaviateVectorStore(config, embeddingModel, weaviateClient);
+        return WeaviateVectorStore.builder(weaviateClient, embeddingModel).objectClass(className).consistencyLevel(WeaviateVectorStore.ConsistentLevel.ONE).build();
     }
 
     @Override

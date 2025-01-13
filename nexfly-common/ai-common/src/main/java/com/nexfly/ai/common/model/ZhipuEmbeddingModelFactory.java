@@ -13,7 +13,7 @@ public class ZhipuEmbeddingModelFactory extends AbstractModelFactory {
     @Override
     Object doCreate(CreateModel createModel, JSONObject jsonObject) {
         return new ZhiPuAiEmbeddingModel(new ZhiPuAiApi(getApiKey()), MetadataMode.EMBED,
-                ZhiPuAiEmbeddingOptions.builder().withModel(createModel.getModelName()).build());
+                ZhiPuAiEmbeddingOptions.builder().model(createModel.getModelName()).build());
     }
 
 }

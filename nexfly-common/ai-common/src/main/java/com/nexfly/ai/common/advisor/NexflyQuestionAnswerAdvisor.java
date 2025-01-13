@@ -201,7 +201,7 @@ public class NexflyQuestionAnswerAdvisor implements CallAroundAdvisor, StreamAro
         } else {
             // 3. 构建上下文
             documentContext = documents.stream()
-                    .map(Document::getContent)
+                    .map(Document::getText)
                     .collect(Collectors.joining(System.lineSeparator()));
         }
 

@@ -100,8 +100,8 @@ public class NexflyPromptChatMemoryAdvisor extends AbstractChatMemoryAdvisor<Cha
 
         // 3. Create a new request with the advised system text and parameters.
         AdvisedRequest advisedRequest = AdvisedRequest.from(request)
-                .withSystemText(advisedSystemText)
-                .withSystemParams(advisedSystemParams)
+                .systemText(advisedSystemText)
+                .systemParams(advisedSystemParams)
                 .build();
 
         // 4. Add the new user input to the conversation memory.

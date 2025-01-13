@@ -11,7 +11,7 @@ public class OpenAiEmbeddingModelFactory extends OpenAiChatModelFactory {
 
     @Override
     Object doCreate(CreateModel createModel, JSONObject jsonObject) {
-        return new OpenAiEmbeddingModel(getOpenAiApi(), MetadataMode.EMBED, OpenAiEmbeddingOptions.builder().withModel(createModel.getModelName()).build());
+        return new OpenAiEmbeddingModel(getOpenAiApi(), MetadataMode.EMBED, OpenAiEmbeddingOptions.builder().model(createModel.getModelName()).build());
     }
 
 }

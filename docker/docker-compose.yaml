@@ -9,7 +9,7 @@ services:
         condition: service_healthy
       nexfly-nacos:
         condition: service_healthy
-    image: wangjun/nexfly-gateway:${NEXFLY_VERSION}
+    image: registry.cn-shenzhen.aliyuncs.com/nexfly/nexfly-gateway:${NEXFLY_VERSION}
     container_name: nexfly-gateway
     ports:
       - 6000:6000
@@ -29,7 +29,7 @@ services:
         condition: service_healthy
       nexfly-nacos:
         condition: service_healthy
-    image: wangjun/nexfly-auth:${NEXFLY_VERSION}
+    image: registry.cn-shenzhen.aliyuncs.com/nexfly/nexfly-auth:${NEXFLY_VERSION}
     container_name: nexfly-auth
     environment:
       - SPRING_CLOUD_NACOS_DISCOVERY_SERVER_ADDR=${NACOS_ADDR}
@@ -49,7 +49,7 @@ services:
         condition: service_healthy
       nexfly-elasticsearch:
         condition: service_healthy
-    image: wangjun/nexfly-system:${NEXFLY_VERSION}
+    image: registry.cn-shenzhen.aliyuncs.com/nexfly/nexfly-system:${NEXFLY_VERSION}
     container_name: nexfly-system
     environment:
       - SPRING_CLOUD_NACOS_DISCOVERY_SERVER_ADDR=${NACOS_ADDR}
@@ -65,7 +65,7 @@ services:
     depends_on:
       nexfly-mysql:
         condition: service_healthy
-    image: wangjun/nexfly-web:${NEXFLY_VERSION}
+    image: registry.cn-shenzhen.aliyuncs.com/nexfly/nexfly-web:${NEXFLY_VERSION}
     container_name: nexfly-web
     ports:
       - 80:80
