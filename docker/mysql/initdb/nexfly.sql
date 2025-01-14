@@ -15,9 +15,6 @@
 /*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
-CREATE DATABASE IF NOT EXISTS `nexfly`;
-USE `nexfly`;
-
 --
 -- Table structure for table `account`
 --
@@ -27,8 +24,9 @@ DROP TABLE IF EXISTS `account`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `account` (
                            `account_id` bigint unsigned NOT NULL AUTO_INCREMENT COMMENT 'ID',
+                           `username` varchar(100) COLLATE utf8mb4_general_ci NOT NULL,
                            `nickname` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
-                           `email` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
+                           `email` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL,
                            `password` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL,
                            `password_salt` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL,
                            `avatar` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL,
@@ -43,8 +41,9 @@ CREATE TABLE `account` (
                            `create_by` bigint NOT NULL,
                            `update_by` bigint NOT NULL,
                            PRIMARY KEY (`account_id`),
+                           UNIQUE KEY `account_UN` (`username`),
                            UNIQUE KEY `account_email_IDX` (`email`) USING BTREE
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='登录账号表';
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='登录账号表';
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -53,8 +52,36 @@ CREATE TABLE `account` (
 
 LOCK TABLES `account` WRITE;
 /*!40000 ALTER TABLE `account` DISABLE KEYS */;
-INSERT INTO `account` VALUES (1,'wangjun','wjun_java@163.com','$2a$10$wb7/PQN5HluZA6a3qXDxzu0yr9s4EQN/dXqYT3D6CyL.2gT1yszZa','1','http://gips3.baidu.com/it/u=3886271102,3123389489&fm=3028&app=3028&f=JPEG&fmt=auto?w=1280&h=960','Chinese','Bright','UTC+8	Asia/Shanghai',NULL,NULL,1,'2024-07-30 03:41:27','2024-07-30 03:41:27',0,0);
+INSERT INTO `account` VALUES (1,'wangjun','王军','wjun_java@163.com','$2a$10$wb7/PQN5HluZA6a3qXDxzu0yr9s4EQN/dXqYT3D6CyL.2gT1yszZa','1','http://gips3.baidu.com/it/u=3886271102,3123389489&fm=3028&app=3028&f=JPEG&fmt=auto?w=1280&h=960','Chinese','Bright','UTC+8	Asia/Shanghai',NULL,NULL,1,'2024-07-30 03:41:27','2024-07-30 03:41:27',0,0),(3,'admin','admin',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,1,'2025-01-02 02:59:23','2025-01-02 02:59:23',0,0);
 /*!40000 ALTER TABLE `account` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `account_openid`
+--
+
+DROP TABLE IF EXISTS `account_openid`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `account_openid` (
+                                  `openid_id` bigint unsigned NOT NULL AUTO_INCREMENT,
+                                  `openid` varchar(100) COLLATE utf8mb4_general_ci NOT NULL,
+                                  `client_id` varchar(100) COLLATE utf8mb4_general_ci NOT NULL,
+                                  `username` varchar(100) COLLATE utf8mb4_general_ci NOT NULL,
+                                  `create_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+                                  `update_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+                                  PRIMARY KEY (`openid_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `account_openid`
+--
+
+LOCK TABLES `account_openid` WRITE;
+/*!40000 ALTER TABLE `account_openid` DISABLE KEYS */;
+INSERT INTO `account_openid` VALUES (1,'1068898686148415488','nexfly-client','admin','2025-01-02 02:59:25','2025-01-02 02:59:25');
+/*!40000 ALTER TABLE `account_openid` ENABLE KEYS */;
 UNLOCK TABLES;
 
 --
@@ -107,6 +134,16 @@ CREATE TABLE `app` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
+-- Dumping data for table `app`
+--
+
+LOCK TABLES `app` WRITE;
+/*!40000 ALTER TABLE `app` DISABLE KEYS */;
+INSERT INTO `app` VALUES (1,1,'fastcms','fastcms','chat',1,'',NULL,'2024-08-27 00:58:56','2024-08-27 00:58:56',1,1);
+/*!40000 ALTER TABLE `app` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
 -- Table structure for table `app_config`
 --
 
@@ -136,6 +173,15 @@ CREATE TABLE `app_config` (
 ) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
+--
+-- Dumping data for table `app_config`
+--
+
+LOCK TABLES `app_config` WRITE;
+/*!40000 ALTER TABLE `app_config` DISABLE KEYS */;
+INSERT INTO `app_config` VALUES (1,1,1,'你是一个基于fastcms开源项目的开发高手，你会开发fastcms模板，插件，以及熟悉fastcms系统的各种配置，fastcms是一个由java，springboot框架开发的插件化架构的开源项目，其github开源地址是：https://github.com/my-fastcms/fastcms.git','[{\"key\":\"question_answer_context\",\"optional\":true}]','抱歉，暂时没有找到相关数据','我是你的fastcms小助手，请问有什么可以帮到您的？',NULL,NULL,NULL,'1',0.48,6,0.3,'2024-08-27 01:00:45',1,'2024-08-27 01:00:45',1);
+/*!40000 ALTER TABLE `app_config` ENABLE KEYS */;
+UNLOCK TABLES;
 
 --
 -- Table structure for table `app_conversation`
@@ -153,7 +199,7 @@ CREATE TABLE `app_conversation` (
                                     `update_by` bigint NOT NULL,
                                     `update_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
                                     PRIMARY KEY (`conversation_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=72 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='会话表';
+) ENGINE=InnoDB AUTO_INCREMENT=76 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='会话表';
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -169,6 +215,16 @@ CREATE TABLE `app_dataset` (
                                PRIMARY KEY (`app_id`,`dataset_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `app_dataset`
+--
+
+LOCK TABLES `app_dataset` WRITE;
+/*!40000 ALTER TABLE `app_dataset` DISABLE KEYS */;
+INSERT INTO `app_dataset` VALUES (1,1);
+/*!40000 ALTER TABLE `app_dataset` ENABLE KEYS */;
+UNLOCK TABLES;
 
 --
 -- Table structure for table `app_message`
@@ -189,7 +245,7 @@ CREATE TABLE `app_message` (
                                `update_by` bigint NOT NULL,
                                `update_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
                                PRIMARY KEY (`message_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=445 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=458 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -213,6 +269,16 @@ CREATE TABLE `app_model` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
+-- Dumping data for table `app_model`
+--
+
+LOCK TABLES `app_model` WRITE;
+/*!40000 ALTER TABLE `app_model` DISABLE KEYS */;
+INSERT INTO `app_model` VALUES (1,1,14,'{\"frequencyPenalty\":0.26,\"maxTokens\":4077,\"presencePenalty\":0.33,\"temperature\":0.1,\"topP\":0.74}','2024-08-26 13:47:47',1,'2024-08-26 13:47:47',1),(2,1,13,'{\"frequencyPenalty\":0.7,\"maxTokens\":4096,\"presencePenalty\":0.4,\"temperature\":0.1,\"topP\":0.3}','2024-11-17 09:31:42',1,'2024-11-17 09:31:42',1);
+/*!40000 ALTER TABLE `app_model` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
 -- Table structure for table `attachment`
 --
 
@@ -233,6 +299,7 @@ CREATE TABLE `attachment` (
                               PRIMARY KEY (`attachment_id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=67 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
+
 
 --
 -- Table structure for table `dataset`
@@ -262,6 +329,16 @@ CREATE TABLE `dataset` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
+-- Dumping data for table `dataset`
+--
+
+LOCK TABLES `dataset` WRITE;
+/*!40000 ALTER TABLE `dataset` DISABLE KEYS */;
+INSERT INTO `dataset` VALUES (1,1,'fastcms','fastcms数据集','Tongyi-Qianwen@text-embedding-v2@embedding','Class78e1fcb83c854cf99230b0d76de96012','','Chinese','naive','{\"raptor\":{},\"chunk_token_num\":128,\"delimiter\":\"\\\\n!?;。；！？\",\"layout_recognize\":true}',1,'2024-08-25 09:42:48',1,'2024-08-25 09:42:48',1);
+/*!40000 ALTER TABLE `dataset` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
 -- Table structure for table `document`
 --
 
@@ -288,6 +365,7 @@ CREATE TABLE `document` (
                             PRIMARY KEY (`document_id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=50 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
+
 
 --
 -- Table structure for table `document_segment`
@@ -369,6 +447,16 @@ CREATE TABLE `provider` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
+-- Dumping data for table `provider`
+--
+
+LOCK TABLES `provider` WRITE;
+/*!40000 ALTER TABLE `provider` DISABLE KEYS */;
+INSERT INTO `provider` VALUES (5,1,'Tongyi-Qianwen','sk-6ddaa19b67a345528f40ecc5e6c2373b',NULL,'2024-10-20 13:11:03','2024-10-20 13:11:03',1,1),(6,1,'Ollama',NULL,'http://localhost:11434/','2024-10-21 03:13:30','2024-10-21 03:13:30',1,1);
+/*!40000 ALTER TABLE `provider` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
 -- Table structure for table `provider_model`
 --
 
@@ -389,6 +477,16 @@ CREATE TABLE `provider_model` (
                                   UNIQUE KEY `provider_model_un` (`provider_name`,`model_name`)
 ) ENGINE=InnoDB AUTO_INCREMENT=21 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='模型表';
 /*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `provider_model`
+--
+
+LOCK TABLES `provider_model` WRITE;
+/*!40000 ALTER TABLE `provider_model` DISABLE KEYS */;
+INSERT INTO `provider_model` VALUES (12,1,'Tongyi-Qianwen','qwen-plus','chat','2024-10-20 13:11:03','2024-10-20 13:11:03',1,1),(13,1,'Tongyi-Qianwen','qwen-turbo','chat','2024-10-20 13:11:03','2024-10-20 13:11:03',1,1),(14,1,'Tongyi-Qianwen','qwen-vl-plus','image2text','2024-10-20 13:11:03','2024-10-20 13:11:03',1,1),(15,1,'Tongyi-Qianwen','sambert-zhide-v1','tts','2024-10-20 13:11:03','2024-10-20 13:11:03',1,1),(16,1,'Tongyi-Qianwen','sambert-zhiru-v1','tts','2024-10-20 13:11:03','2024-10-20 13:11:03',1,1),(17,1,'Tongyi-Qianwen','text-embedding-v2','embedding','2024-10-20 13:11:03','2024-10-20 13:11:03',1,1),(18,1,'Tongyi-Qianwen','text-embedding-v3','embedding','2024-10-20 13:11:03','2024-10-20 13:11:03',1,1),(19,1,'Ollama','llama3.1','chat','2024-10-21 03:13:30','2024-10-21 03:13:30',1,1),(20,1,'Tongyi-Qianwen','qwen-vl-max','chat','2024-11-17 09:31:42','2024-11-17 09:31:42',1,1);
+/*!40000 ALTER TABLE `provider_model` ENABLE KEYS */;
+UNLOCK TABLES;
 
 --
 -- Table structure for table `sys_provider`
@@ -467,5 +565,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2024-11-29 14:45:52
-
+-- Dump completed on 2025-01-13 22:10:26
