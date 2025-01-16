@@ -322,8 +322,10 @@ public class AppServiceImpl implements AppService {
             appEditResponse.setModelId(appModelInfo.getProviderName().concat("@").concat(appModelInfo.getModelName()).concat("@").concat(appModelInfo.getModelType()));
         }
         List<Dataset> datasetList = datasetMapper.findDatasetListByAppId(app.getAppId());
-        appEditResponse.setDatasetIds(datasetList.stream().map(Dataset::getDatasetId).toList());
-        appEditResponse.setDatasetNames(datasetList.stream().map(Dataset::getName).toList());
+        if (!datasetList.isEmpty()) {
+            appEditResponse.setDatasetIds(datasetList.stream().map(Dataset::getDatasetId).toList());
+            appEditResponse.setDatasetNames(datasetList.stream().map(Dataset::getName).toList());
+        }
         return appEditResponse;
     }
 

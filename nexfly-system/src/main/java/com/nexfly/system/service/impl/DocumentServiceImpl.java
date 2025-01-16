@@ -184,6 +184,7 @@ public class DocumentServiceImpl implements DocumentService {
             doc.setProcessStatus(ProcessStatus.DONE.value);
             documentMapper.update(doc);
         } catch (Exception e) {
+            e.printStackTrace();
             throw new RuntimeException(e.getMessage());
         }
     }

@@ -37,7 +37,7 @@ public class MinioFileManager implements OssFileManager, InitializingBean {
     @Override
     public InputStream download(String filePath) throws NexflyException {
         try {
-            StatObjectResponse statObjectResponse = minioClient.statObject(StatObjectArgs.builder().bucket(DEFAULT_BUCKET).object(filePath).build());
+//            StatObjectResponse statObjectResponse = minioClient.statObject(StatObjectArgs.builder().bucket(DEFAULT_BUCKET).object(filePath).build());
             return minioClient.getObject(GetObjectArgs.builder().bucket(DEFAULT_BUCKET).object(filePath).build());
         } catch (Exception e) {
             throw new NexflyException(e.getMessage());

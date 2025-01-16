@@ -1,5 +1,5 @@
 <div align="center">
-<a href="https://nexfly.xjd2020.com/">
+<a href="http://nexfly.xjd2020.com/">
 <img src="doc/images/nexfly-logo.webp" width="520" alt="nexfly logo">
 </a>
 </div>

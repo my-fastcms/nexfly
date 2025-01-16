@@ -22,6 +22,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(RuntimeException.class)
     public RestResult<Object> handlerRuntimeException(RuntimeException e) {
         log.error(e.getMessage());
+        e.printStackTrace();
         return RestResultUtils.failed("Server Exception");
     }
 
