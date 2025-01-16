@@ -13,7 +13,7 @@
     <a href="https://github.com/my-fastcms/nexfly/releases/latest">
         <img src="https://img.shields.io/github/v/release/my-fastcms/nexfly?color=blue&label=Latest%20Release" alt="Latest Release">
     </a>
-    <a href="https://nexfly.xjd2020.com" target="_blank">
+    <a href="http://nexfly.xjd2020.com" target="_blank">
         <img alt="Static Badge" src="https://img.shields.io/badge/Online-Demo-4e6b99"></a>
     <a href="https://github.com/my-fastcms/nexfly/blob/main/LICENSE">
     <img height="21" src="https://img.shields.io/badge/License-Apache--2.0-ffffff?labelColor=d4eaf7&color=2e6cc4" alt="license">
@@ -26,7 +26,7 @@ Nexfly is an open-source RAG (Retrieval-Augmented Generation) application projec
 
 ## 🎮 Online Tryout
 
-You can try it out by visiting [https://nexfly.xjd2020.com](https://nexfly.xjd2020.com).
+You can try it out by visiting [http://nexfly.xjd2020.com](http://nexfly.xjd2020.com).
 
 <div align="center" style="margin-top:20px;margin-bottom:20px;">
 ![Nexfly](doc/images/nexfly.png)
